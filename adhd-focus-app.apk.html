@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOCUS OPS</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0a0c0f;
+    --surface: #111418;
+    --panel:   #161b22;
+    --border:  rgba(255,255,255,0.08);
+    --muted:   #4a5568;
+    --text:    #e8eaf0;
+    --red:     #e63946;
+    --orange:  #f77f00;
+    --yellow:  #fcbf49;
+    --green:   #2dc653;
+    --blue:    #1a8fe3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Barlow Condensed', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px 48px;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
+  }
+
+  /* HEADER */
+  header {
+    width: 100%; max-width: 880px; margin-bottom: 20px;
+    border-bottom: 2px solid var(--orange); padding-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .logo-main { font-size: 2.4rem; font-weight: 900; letter-spacing: 6px; line-height: 1; }
+  .logo-main span { color: var(--orange); }
+  .logo-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; }
+  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .status-dot { display: flex; align-items: center; gap: 6px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* SOUND CONTROLS - replaced by cockpit panel below */
+
+  /* GRID */
+  .app { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 880px; }
+  @media (max-width: 640px) { .app { grid-template-columns: 1fr; } .logo-main { font-size: 1.8rem; } }
+
+  /* PANELS */
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-top: 3px solid;
+    padding: 24px 20px; display: flex; flex-direction: column; gap: 16px;
+    position: relative; overflow: hidden;
+  }
+  .panel::before { content:''; position:absolute; top:0; right:0; width:60px; height:60px; background:linear-gradient(225deg,rgba(255,255,255,0.03),transparent 60%); pointer-events:none; }
+  .timer-panel { border-top-color: var(--orange); }
+  .tasks-panel { border-top-color: var(--blue); }
+  .panel-title { display:flex; align-items:center; gap:10px; font-family:'Share Tech Mono',monospace; font-size:0.63rem; letter-spacing:4px; text-transform:uppercase; color: var(--muted); }
+  .tag { font-size:0.58rem; font-weight:700; letter-spacing:2px; padding:2px 6px; color:#000; }
+  .timer-panel .tag { background: var(--orange); }
+  .tasks-panel  .tag { background: var(--blue); color:#fff; }
+
+  /* TIMER — Real radar sweep style */
+  .timer-core { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .ring-wrap { position:relative; width:220px; height:220px; cursor:grab; touch-action:none; }
+  .ring-wrap:active { cursor:grabbing; }
+  .ring-wrap svg { width:220px; height:220px; }
+  .timer-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none; }
+  .time-num { font-family:'Share Tech Mono',monospace; font-size:2.6rem; letter-spacing:2px; line-height:1; }
+  .time-lbl { font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:4px; color:var(--muted); text-transform:uppercase; margin-top:4px; }
+  .drag-hint { font-family:'Share Tech Mono',monospace; font-size:0.52rem; letter-spacing:2px; color:var(--muted); text-align:center; margin-top:-6px; }
+
+  .presets { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; width:100%; }
+  .p-btn { background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.85rem; letter-spacing:1px; padding:8px 4px; cursor:pointer; text-transform:uppercase; transition:all .15s; }
+  .p-btn:hover,.p-btn.on { background:var(--orange); border-color:var(--orange); color:#000; }
+  .custom-row { display:flex; gap:8px; align-items:center; width:100%; }
+  .custom-row input { flex:1; background:rgba(255,255,255,0.04); border:none; border-bottom:2px solid var(--orange); color:var(--text); font-family:'Share Tech Mono',monospace; font-size:1.2rem; padding:8px 12px; text-align:center; outline:none; }
+  .custom-row span { font-family:'Share Tech Mono',monospace; font-size:0.68rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; }
+
+  .controls { display:flex; gap:8px; width:100%; }
+  .btn { border:none; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:0.88rem; letter-spacing:2px; text-transform:uppercase; padding:11px 14px; cursor:pointer; flex:1; transition:all .15s; }
+  .btn:hover { filter:brightness(1.12); }
+  .btn:active { transform:scale(.97); }
+  .btn-go  { background:var(--green);  color:#000; }
+  .btn-hld { background:var(--yellow); color:#000; }
+  .btn-rst { background:rgba(255,255,255,0.07); color:var(--text); border:1px solid var(--border); }
+
+  /* TASKS */
+  .add-row { display:flex; gap:8px; }
+  .add-row input { flex:1; background:rgba(255,255,255,0.04); border:none; border-bottom:2px solid var(--blue); color:var(--text); font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:600; letter-spacing:1px; padding:9px 12px; outline:none; }
+  .add-row input::placeholder { color:var(--muted); }
+  .btn-add { background:var(--blue); color:#fff; font-size:1.4rem; padding:9px 16px; border:none; cursor:pointer; font-weight:700; transition:background .15s; }
+  .btn-add:hover { background:#1f9fff; }
+  .swatches { display:flex; gap:7px; align-items:center; }
+  .sw-lbl { font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-right:4px; }
+  .sw { width:20px; height:20px; cursor:pointer; border:2px solid transparent; transition:all .15s; }
+  .sw.sel { border-color:#fff; transform:scale(1.2); outline:1px solid rgba(255,255,255,.3); }
+  .prog-row { display:flex; align-items:center; gap:10px; }
+  .prog-bar { flex:1; height:4px; background:rgba(255,255,255,0.06); overflow:hidden; }
+  .prog-fill { height:100%; background:linear-gradient(90deg,var(--blue),var(--green)); transition:width .4s; }
+  .prog-txt { font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:var(--muted); white-space:nowrap; }
+  .task-list { display:flex; flex-direction:column; gap:6px; max-height:310px; overflow-y:auto; padding-right:2px; }
+  .task-list::-webkit-scrollbar { width:3px; }
+  .task-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); }
+  .task-item { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-left:3px solid; padding:10px 12px; animation:slideIn .2s ease; transition:opacity .2s; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  .task-item.done { opacity:.35; }
+  .task-item.done .t-txt { text-decoration:line-through; }
+  .chk { width:20px; height:20px; border:1.5px solid rgba(255,255,255,.2); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:700; transition:all .15s; }
+  .chk:hover { border-color:var(--green); }
+  .chk.on { background:var(--green); border-color:var(--green); color:#000; }
+  .t-txt { flex:1; font-size:.95rem; font-weight:600; letter-spacing:.5px; word-break:break-word; }
+  .t-del { background:none; border:none; color:rgba(255,255,255,.15); font-size:.9rem; cursor:pointer; padding:2px 5px; transition:color .15s; font-weight:700; }
+  .t-del:hover { color:var(--red); }
+  .t-priority { display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 6px; border-radius:4px; border:1px solid rgba(255,255,255,0.06); transition:all .15s; flex-shrink:0; }
+  .t-priority:hover { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.15); }
+  .t-prio-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .t-prio-lbl { font-family:'Share Tech Mono',monospace; font-size:0.5rem; letter-spacing:1px; }
+  .empty { text-align:center; color:var(--muted); font-family:'Share Tech Mono',monospace; font-size:.72rem; letter-spacing:2px; padding:28px 0; text-transform:uppercase; }
+
+  /* ══════════════════════════════════════════
+     COCKPIT PANEL — Realistic aircraft switches
+     ══════════════════════════════════════════ */
+  .cockpit-panel {
+    width: 100%; max-width: 880px;
+    background: linear-gradient(180deg, #1c1f24 0%, #141618 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-top: 3px solid #f77f00;
+    border-radius: 4px;
+    padding: 20px 40px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .cockpit-panel::before {
+    content: 'AUDIO CONTROL PANEL';
+    position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.52rem;
+    letter-spacing: 4px; color: #f77f00; background: #141618;
+    padding: 0 10px;
+  }
+  /* Single horizontal row — all switches same baseline */
+  .cockpit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+  }
+
+  /* Each switch unit — vertical stack: label / LED / housing / status */
+  .sw-unit {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 5px;
+    user-select: none; cursor: pointer;
+  }
+  .sw-top-label {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.5rem;
+    letter-spacing: 2px; color: #8a90a0; text-transform: uppercase;
+    text-align: center; line-height: 1.4; white-space: nowrap;
+  }
+  /* LED dot */
+  .sw-led {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #1a1a1a; border: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .sw-led.on-green  { background: #2dc653; box-shadow: 0 0 7px #2dc653; }
+  .sw-led.on-blue   { background: #1a8fe3; box-shadow: 0 0 7px #1a8fe3; }
+  .sw-led.on-orange { background: #f77f00; box-shadow: 0 0 7px #f77f00; }
+
+  /* Metal housing plate */
+  .sw-housing {
+    width: 40px; height: 72px;
+    background: linear-gradient(160deg, #2e3138 0%, #20232a 50%, #2a2d35 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 2px solid rgba(0,0,0,0.6);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.07),
+      inset 0 -1px 0 rgba(0,0,0,0.4),
+      2px 4px 12px rgba(0,0,0,0.6);
+  }
+  /* Screw heads at corners */
+  .sw-housing::before, .sw-housing::after {
+    content: '+';
+    position: absolute; font-size: 6px;
+    color: rgba(255,255,255,0.1); line-height: 1; font-weight: 700;
+  }
+  .sw-housing::before { top: 4px; left: 5px; }
+  .sw-housing::after  { bottom: 4px; right: 5px; }
+
+  /* Slot channel inside housing */
+  .sw-slot {
+    position: absolute;
+    width: 10px; height: 50px;
+    background: #080a0d;
+    border-radius: 5px;
+    border: 1px solid rgba(0,0,0,0.9);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.9);
+  }
+
+  /* The toggle bat — slides vertically in the slot */
+  .sw-bat {
+    position: absolute;
+    width: 16px; height: 32px;
+    border-radius: 8px 8px 5px 5px;
+    background: linear-gradient(90deg,
+      #8a9099 0%, #c8cdd4 20%,
+      #eaecef 45%, #d2d7de 65%,
+      #a8adb5 85%, #888e96 100%);
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow:
+      inset 0 2px 4px rgba(255,255,255,0.55),
+      inset 0 -2px 4px rgba(0,0,0,0.25),
+      0 4px 10px rgba(0,0,0,0.8);
+    /* OFF = bat UP — top of slot */
+    top: 10px;
+    transition: top 0.16s cubic-bezier(0.4,0,0.2,1);
+    z-index: 2;
+  }
+  /* Grip ridges */
+  .sw-bat::before {
+    content: '';
+    position: absolute; top: 9px; left: 50%;
+    transform: translateX(-50%);
+    width: 9px; height: 1.5px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 1px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15), 0 8px 0 rgba(0,0,0,0.1);
+  }
+  /* Round ball tip */
+  .sw-bat::after {
+    content: '';
+    position: absolute; top: -7px; left: 50%;
+    transform: translateX(-50%);
+    width: 16px; height: 16px; border-radius: 50%;
+    background: linear-gradient(135deg, #dde0e4 0%, #b8bcc2 55%, #9a9fa6 100%);
+    border: 1px solid rgba(255,255,255,0.28);
+    box-shadow: inset 0 1px 3px rgba(255,255,255,0.5), 0 3px 6px rgba(0,0,0,0.6);
+  }
+  /* ON = bat DOWN */
+  .sw-unit.on .sw-bat { top: 28px; }
+  /* Glow slot when ON */
+  .sw-unit.on .sw-slot { box-shadow: inset 0 2px 6px rgba(0,0,0,0.9), 0 0 6px rgba(45,198,83,0.25); }
+
+  /* Status text below */
+  .sw-bot-label {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.48rem;
+    letter-spacing: 2px; color: #5a6070; text-transform: uppercase;
+    text-align: center;
+  }
+  .sw-unit.on .sw-bot-label { color: #2dc653; }
+
+  /* Vertical divider between groups */
+  .cockpit-divider {
+    width: 1px; height: 72px;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.07), transparent);
+  }
+  /* ── URGENCY CATEGORIES ── */
+  .cat-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase;
+    padding: 7px 14px; cursor: pointer; transition: all 0.15s;
+    margin-top: 4px; width: 100%;
+  }
+  .cat-btn:hover { background: rgba(255,255,255,0.09); }
+  .cat-btn .badge {
+    margin-left: auto;
+    background: var(--orange); color: #000;
+    font-size: 0.6rem; font-weight: 700;
+    padding: 1px 6px; border-radius: 2px; min-width: 18px; text-align: center;
+  }
+
+  /* Full-screen drawer */
+  .cat-drawer {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--bg);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+  .cat-drawer.open { transform: translateY(0); }
+
+  .cat-drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px 14px;
+    border-bottom: 2px solid var(--orange);
+    background: var(--panel);
+    flex-shrink: 0;
+  }
+  .cat-drawer-title {
+    font-size: 1.4rem; font-weight: 900; letter-spacing: 5px;
+  }
+  .cat-drawer-title span { color: var(--orange); }
+  .cat-close {
+    background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 2px; padding: 8px 16px;
+    cursor: pointer; text-transform: uppercase; transition: all 0.15s;
+  }
+  .cat-close:hover { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* Category tabs */
+  .cat-tabs {
+    display: flex; gap: 0; flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .cat-tab {
+    flex: 1; min-width: 80px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 8px;
+    border: none; border-bottom: 3px solid transparent;
+    background: var(--panel); color: var(--muted);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .cat-tab .tab-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  .cat-tab.active {
+    color: var(--text);
+    background: rgba(255,255,255,0.04);
+  }
+  .cat-tab .tab-count {
+    font-size: 0.55rem; color: var(--muted);
+  }
+
+  /* Category content */
+  .cat-content {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+  }
+  .cat-section { display: none; }
+  .cat-section.active { display: block; }
+
+  .cat-section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cat-color-bar {
+    width: 4px; height: 32px; border-radius: 2px; flex-shrink: 0;
+  }
+  .cat-section-title {
+    font-size: 1.1rem; font-weight: 900; letter-spacing: 4px;
+  }
+  .cat-section-sub {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+    color: var(--muted); letter-spacing: 2px; margin-left: auto;
+  }
+
+  .cat-task-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-left: 3px solid; padding: 11px 14px; margin-bottom: 7px;
+    animation: slideIn .2s ease;
+  }
+  .cat-task-item.done { opacity: 0.35; }
+  .cat-task-item.done .t-txt { text-decoration: line-through; }
+  .cat-empty {
+    text-align: center; color: var(--muted);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 3px; padding: 40px 0; text-transform: uppercase;
+  }
+
+  /* ALL tab progress bars */
+  .cat-group { margin-bottom: 28px; }
+  .cat-group-label {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 3px; color: var(--muted); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .cat-group-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(70px); background:var(--panel); border:1px solid var(--green); border-left:4px solid var(--green); color:var(--green); font-family:'Share Tech Mono',monospace; font-size:.72rem; letter-spacing:2px; text-transform:uppercase; padding:11px 22px; transition:transform .3s cubic-bezier(.34,1.4,.64,1),opacity .3s; opacity:0; pointer-events:none; z-index:100; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+  .toast.warn { border-color:var(--orange); color:var(--orange); }
+  .toast.alert { border-color:var(--red); color:var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo-main">FOCUS<span>OPS</span></div>
+    <div class="logo-sub">ADHD Mission Control // v17.4</div>
+  </div>
+  <div class="header-right">
+    <div class="status-dot"><span class="dot"></span> SYSTEM ONLINE &nbsp;|&nbsp; <span id="clk">--:--:--</span></div>
+  </div>
+</header>
+
+<!-- COCKPIT AUDIO PANEL -->
+  <div class="cockpit-panel">
+    <div class="cockpit-row">
+
+      <!-- SONAR -->
+      <div class="sw-unit" id="swSonar" onclick="flipSwitch('swSonar', toggleSonar)">
+        <div class="sw-top-label">SONAR</div>
+        <div class="sw-led" id="ledSonar"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indSonar">OFF</div>
+      </div>
+
+      <div class="cockpit-divider"></div>
+
+      <!-- LOAD MUSIC -->
+      <div class="sw-unit" id="swMusicLoad" onclick="flipMusicLoad()">
+        <div class="sw-top-label">LOAD MUSIC</div>
+        <div class="sw-led on-blue" id="ledMusicLoad"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indMusic">—</div>
+      </div>
+
+      <!-- MUSIC ON/OFF -->
+      <div class="sw-unit on" id="swMusicEn" onclick="flipSwitch('swMusicEn', toggleMusicEnabled)">
+        <div class="sw-top-label">MUSIC</div>
+        <div class="sw-led on-green" id="ledMusicEn"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indMusicEn">ON</div>
+      </div>
+
+      <div class="cockpit-divider"></div>
+
+      <!-- ALERTS -->
+      <div class="sw-unit on" id="swAlerts" onclick="flipSwitch('swAlerts', toggleAlerts)">
+        <div class="sw-top-label">ALERTS</div>
+        <div class="sw-led on-green" id="ledAlerts"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indAlerts">ON</div>
+      </div>
+
+    </div>
+  </div>
+  <input type="file" id="musicFileInput" accept="audio/*" style="display:none" onchange="loadMusicFile(this)"/>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- TIMER -->
+  <div class="panel timer-panel">
+    <div class="panel-title"><span class="tag">OPS</span> MISSION TIMER</div>
+    <div class="timer-core">
+      <div class="ring-wrap" id="radarWrap">
+        <canvas id="radarCanvas" width="220" height="220"></canvas>
+        <div class="timer-center">
+          <div class="time-num" id="tDisp">25:00</div>
+          <div class="time-lbl" id="tLbl">STANDBY</div>
+        </div>
+      </div>
+      <div class="drag-hint">↻ DRAG CIRCLE TO SET TIME</div>
+
+      <div class="presets">
+        <button class="p-btn" onclick="setPreset(5,this)">5 MIN</button>
+        <button class="p-btn on" onclick="setPreset(25,this)">25 MIN</button>
+        <button class="p-btn" onclick="setPreset(45,this)">45 MIN</button>
+        <button class="p-btn" onclick="setPreset(60,this)">60 MIN</button>
+      </div>
+
+      <div class="custom-row">
+        <input type="number" id="cMin" value="25" min="1" max="180" oninput="setCustom(this.value)"/>
+        <span>MINUTES</span>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-go"  id="btnGo"  onclick="startTimer()">▶ EXECUTE</button>
+        <button class="btn btn-hld" id="btnHld" onclick="pauseTimer()" style="display:none">⏸ HOLD</button>
+        <button class="btn btn-rst" onclick="resetTimer()">↺ ABORT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="panel tasks-panel">
+    <div class="panel-title"><span class="tag">OBJ</span> MISSION OBJECTIVES</div>
+    <div class="add-row">
+      <input type="text" id="tInp" placeholder="ADD NEW OBJECTIVE..." maxlength="80" onkeydown="if(event.key==='Enter')addTask()"/>
+      <button class="btn-add" onclick="addTask()">+</button>
+    </div>
+    <div class="swatches"><span class="sw-lbl">URGENCY:</span></div>
+    <div class="prog-row">
+      <div class="prog-bar"><div class="prog-fill" id="pFill" style="width:0%"></div></div>
+      <div class="prog-txt" id="pTxt">0/0</div>
+    </div>
+    <div class="task-list" id="tList"><div class="empty">// NO OBJECTIVES LOADED //</div></div>
+    <button class="cat-btn" onclick="openDrawer()">
+      ▤ VIEW BY URGENCY LEVEL
+      <span class="badge" id="catBadge">0</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- CATEGORIES DRAWER -->
+<div class="cat-drawer" id="catDrawer">
+  <div class="cat-drawer-header">
+    <div>
+      <div class="cat-drawer-title">URGENCY<span>BOARD</span></div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:3px;color:var(--muted);margin-top:3px;">OBJECTIVES BY PRIORITY LEVEL</div>
+    </div>
+    <button class="cat-close" onclick="closeDrawer()">✕ CLOSE</button>
+  </div>
+
+  <div class="cat-tabs" id="catTabs"></div>
+
+  <div class="cat-content" id="catContent"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  AUDIO ENGINE
+// ══════════════════════════════════════════
+let actx = null;
+let musicNodes = null;
+let sonarIv = null;
+let sonarOn = false;
+let alertsOn = true;
+let musicEnabled = true; // music on/off toggle
+
+function getCtx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+/* ══════════════════════════════════════════
+   REAL SONAR PING
+   — Pure sine at ~1kHz, short sharp attack,
+     long exponential tail, plus a reverb
+     convolver to simulate metal hull resonance
+   ══════════════════════════════════════════ */
+function playSonarPing() {
+  syncRadarToSonar(); // reset radar to 12 o'clock on each ping
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+
+  // --- reverb impulse (simulates metallic room) ---
+  const revLen = ctx.sampleRate * 2.2;
+  const revBuf = ctx.createBuffer(2, revLen, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = revBuf.getChannelData(ch);
+    for (let i = 0; i < revLen; i++) {
+      // exponential decay noise — mimics hull resonance
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / revLen, 4.5);
+    }
+  }
+  const reverb = ctx.createConvolver();
+  reverb.buffer = revBuf;
+  const reverbGain = ctx.createGain();
+  reverbGain.gain.value = 0.35;
+  reverb.connect(reverbGain);
+  reverbGain.connect(ctx.destination);
+
+  // --- main ping ---
+  const osc = ctx.createOscillator();
+  const envGain = ctx.createGain();
+  osc.connect(envGain);
+  envGain.connect(ctx.destination); // dry
+  envGain.connect(reverb);          // wet
+
+  osc.type = 'sine';
+  // Real sonar pings are around 1–3 kHz, very clean sine
+  osc.frequency.setValueAtTime(1050, now);
+  // Tiny frequency drop — characteristic of real sonar
+  osc.frequency.exponentialRampToValueAtTime(980, now + 0.06);
+
+  // Very fast attack, then long natural decay
+  envGain.gain.setValueAtTime(0, now);
+  envGain.gain.linearRampToValueAtTime(0.55, now + 0.008); // sharp click attack
+  envGain.gain.exponentialRampToValueAtTime(0.001, now + 1.8); // long tail
+
+  osc.start(now);
+  osc.stop(now + 1.9);
+
+  // --- subtle harmonic overtone (hull resonance character) ---
+  const osc2 = ctx.createOscillator();
+  const env2 = ctx.createGain();
+  osc2.connect(env2); env2.connect(reverb);
+  osc2.type = 'sine';
+  osc2.frequency.value = 2100; // 2nd harmonic
+  env2.gain.setValueAtTime(0, now);
+  env2.gain.linearRampToValueAtTime(0.08, now + 0.008);
+  env2.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+  osc2.start(now); osc2.stop(now + 1.0);
+
+  triggerSonarPulse();
+}
+
+function triggerSonarPulse() {
+  // visual pulse drawn on canvas now — nothing to do here
+}
+
+function startSonarInterval() {
+  if (sonarIv) clearInterval(sonarIv);
+  playSonarPing();
+  sonarIv = setInterval(() => { if (running && sonarOn) playSonarPing(); }, 5000);
+}
+
+function stopSonarInterval() {
+  if (sonarIv) { clearInterval(sonarIv); sonarIv = null; }
+}
+
+/* ══════════════════════════════════════════
+   MUSIC — user uploads their own MP3/file
+   No external URLs, no blocking, works 100%
+   ══════════════════════════════════════════ */
+let musicAudio = null;
+
+/* ── ALERT SOUNDS ── */
+function playAlert(type) {
+  if (!alertsOn) return;
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+
+  if (type === 'start') {
+    // ascending 3-beep
+    [0, 0.18, 0.36].forEach((offset, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square';
+      o.frequency.value = 440 * Math.pow(1.25, i);
+      g.gain.setValueAtTime(0, now + offset);
+      g.gain.linearRampToValueAtTime(0.12, now + offset + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.15);
+      o.start(now + offset); o.stop(now + offset + 0.15);
+    });
+  } else if (type === 'pause') {
+    // descending 2-beep
+    [0, 0.2].forEach((offset, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square'; o.frequency.value = 660 - i * 220;
+      g.gain.setValueAtTime(0, now + offset);
+      g.gain.linearRampToValueAtTime(0.1, now + offset + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.18);
+      o.start(now + offset); o.stop(now + offset + 0.18);
+    });
+  } else if (type === 'warning') {
+    // rapid urgent beeps
+    [0, 0.15, 0.30, 0.45].forEach(offset => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square'; o.frequency.value = 1100;
+      g.gain.setValueAtTime(0, now + offset);
+      g.gain.linearRampToValueAtTime(0.13, now + offset + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.12);
+      o.start(now + offset); o.stop(now + offset + 0.12);
+    });
+  } else if (type === 'complete') {
+    // triumphant fanfare
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square'; o.frequency.value = freq;
+      const t = now + i * 0.22;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.15, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      o.start(t); o.stop(t + 0.4);
+    });
+  } else if (type === 'task') {
+    // soft check sound
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine'; o.frequency.value = 880;
+    o.frequency.exponentialRampToValueAtTime(1320, now + 0.12);
+    g.gain.setValueAtTime(0.1, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    o.start(now); o.stop(now + 0.2);
+  }
+}
+
+/* ── COCKPIT SWITCH LOGIC ── */
+function flipSwitch(id, callback) {
+  const unit = document.getElementById(id);
+  unit.classList.toggle('on');
+  callback();
+}
+
+function setSwitchOn(id, on) {
+  const unit = document.getElementById(id);
+  if (on) unit.classList.add('on'); else unit.classList.remove('on');
+}
+
+function flipMusicLoad() {
+  document.getElementById('musicFileInput').click();
+}
+
+function loadMusicFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  if (musicAudio) { musicAudio.pause(); musicAudio = null; }
+  musicAudio = new Audio(url);
+  musicAudio.volume = 0;
+  musicAudio.loop = true;
+  setSwitchOn('swMusicLoad', true);
+  document.getElementById('ledMusicLoad').className = 'sw-led on-green';
+  document.getElementById('indMusic').textContent = 'READY';
+  document.getElementById('swMusicLoad').querySelector('.sw-bot-label').style.color = '#2dc653';
+  showToast('MUSIC READY — STARTS WITH TIMER');
+}
+
+/* ── TOGGLES ── */
+function toggleSonar() {
+  sonarOn = !sonarOn;
+  document.getElementById('indSonar').textContent = sonarOn ? 'ON' : 'OFF';
+  document.getElementById('ledSonar').className = 'sw-led ' + (sonarOn ? 'on-orange' : '');
+  if (sonarOn && running) {
+    startSonarInterval();
+    startRadarAnim();   // ← fix: also start the animation loop
+  } else {
+    stopSonarInterval();
+    stopRadarAnim();
+    drawAll(); // redraw without radar
+  }
+}
+
+function toggleMusicEnabled() {
+  musicEnabled = !musicEnabled;
+  document.getElementById('indMusicEn').textContent = musicEnabled ? 'ON' : 'OFF';
+  document.getElementById('ledMusicEn').className = 'sw-led ' + (musicEnabled ? 'on-green' : '');
+  if (!musicEnabled && musicAudio) pauseMusicIfLoaded();
+  else if (musicEnabled && running && musicAudio) startMusicIfLoaded();
+}
+
+function toggleAlerts() {
+  alertsOn = !alertsOn;
+  document.getElementById('indAlerts').textContent = alertsOn ? 'ON' : 'OFF';
+  document.getElementById('ledAlerts').className = 'sw-led ' + (alertsOn ? 'on-green' : '');
+}
+
+// Music now controlled by timer — no manual toggle needed
+function startMusicIfLoaded() {
+  if (!musicAudio || !musicEnabled) return;
+  const playPromise = musicAudio.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      let v = musicAudio.volume || 0;
+      const fi = setInterval(() => {
+        if (!musicAudio) { clearInterval(fi); return; }
+        v = Math.min(v + 0.03, 0.5);
+        musicAudio.volume = v;
+        if (v >= 0.5) clearInterval(fi);
+      }, 80);
+    }).catch(() => {});
+  }
+}
+
+function pauseMusicIfLoaded() {
+  if (!musicAudio) return;
+  const a = musicAudio;
+  let v = a.volume;
+  const fo = setInterval(() => {
+    v = Math.max(v - 0.05, 0);
+    a.volume = v;
+    if (v <= 0) { clearInterval(fo); a.pause(); }
+  }, 60);
+}
+
+function stopMusicIfLoaded() {
+  if (!musicAudio) return;
+  musicAudio.pause();
+  musicAudio.currentTime = 0;
+  musicAudio.volume = 0;
+}
+
+// ══════════════════════════════════════════
+//  CLOCK
+// ══════════════════════════════════════════
+setInterval(() => {
+  const n = new Date();
+  document.getElementById('clk').textContent =
+    [n.getHours(), n.getMinutes(), n.getSeconds()].map(x => String(x).padStart(2,'0')).join(':');
+}, 1000);
+
+// ══════════════════════════════════════════
+//  CANVAS — two independent systems:
+//  1. PAC-MAN timer (starts at set time, eats CCW to zero)
+//  2. RADAR sweep (synced to sonar ping — one lap per ping)
+// ══════════════════════════════════════════
+const canvas = document.getElementById('radarCanvas');
+const ctx2 = canvas.getContext('2d');
+const CX = 110, CY = 110, R = 100;
+
+let totalSec = 25 * 60, rem = totalSec, tiv = null, running = false;
+
+// ── Timer color based on remaining minutes ──
+function getTimerColor() {
+  const m = rem / 60;
+  if (!running && rem === totalSec) return '#1a8fe3'; // blue — idle
+  if (m > 30) return '#2dc653';   // green  > 30 min
+  if (m > 15) return '#fcbf49';   // yellow > 15 min
+  if (m > 5)  return '#f77f00';   // orange > 5 min
+  return '#e63946';               // red    ≤ 5 min
+}
+
+// Convert minutes to angle on the clock face
+// 0 min = 12 o'clock (-PI/2), clockwise positive
+// So minute m → angle = -PI/2 + (m/60)*2PI
+function minToAngle(m) {
+  return -Math.PI / 2 + (m / 60) * Math.PI * 2;
+}
+
+// ── Radar sweep — synced to sonar ──
+// One full lap per sonar interval (SONAR_INTERVAL ms)
+// Pointer is at 12 o'clock (0 mark) at the moment of each ping
+const SONAR_INTERVAL = 5000; // ms — must match startSonarInterval
+let radarAngle = -Math.PI / 2;
+let radarRafId = null;
+let radarStartTime = null; // timestamp of last ping
+
+function startRadarAnim() {
+  if (radarRafId) return;
+  radarStartTime = performance.now();
+  function loop(ts) {
+    if (!sonarOn || !running) { radarRafId = null; return; }
+    // fraction through current lap
+    const elapsed = (ts - radarStartTime) % SONAR_INTERVAL;
+    const frac = elapsed / SONAR_INTERVAL;
+    radarAngle = -Math.PI / 2 + frac * Math.PI * 2; // CW from 12 o'clock
+    drawAll();
+    radarRafId = requestAnimationFrame(loop);
+  }
+  radarRafId = requestAnimationFrame(loop);
+}
+
+function stopRadarAnim() {
+  if (radarRafId) { cancelAnimationFrame(radarRafId); radarRafId = null; }
+  radarStartTime = null;
+}
+
+// Called by sonar ping — reset radar to 12 o'clock at ping moment
+function syncRadarToSonar() {
+  radarStartTime = performance.now();
+}
+
+// ── Draw everything ──
+function drawAll() {
+  ctx2.clearRect(0, 0, 220, 220);
+
+  // Background
+  ctx2.beginPath();
+  ctx2.arc(CX, CY, R, 0, Math.PI * 2);
+  ctx2.fillStyle = '#07090c';
+  ctx2.fill();
+
+  // Concentric rings
+  [0.33, 0.66, 1].forEach(f => {
+    ctx2.beginPath();
+    ctx2.arc(CX, CY, R * f, 0, Math.PI * 2);
+    ctx2.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx2.lineWidth = 1; ctx2.stroke();
+  });
+
+  // Cross hairs
+  ctx2.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx2.lineWidth = 1;
+  [[CX-R,CY,CX+R,CY],[CX,CY-R,CX,CY+R]].forEach(([x1,y1,x2,y2]) => {
+    ctx2.beginPath(); ctx2.moveTo(x1,y1); ctx2.lineTo(x2,y2); ctx2.stroke();
+  });
+
+  // Tick marks (60 ticks = clock face, 12 o'clock = 0/60)
+  for (let i = 0; i < 60; i++) {
+    const a = minToAngle(i);
+    const maj = i % 5 === 0;
+    const r1 = maj ? R-10 : R-5;
+    ctx2.beginPath();
+    ctx2.moveTo(CX + r1*Math.cos(a), CY + r1*Math.sin(a));
+    ctx2.lineTo(CX + R*Math.cos(a),  CY + R*Math.sin(a));
+    ctx2.strokeStyle = maj ? 'rgba(247,127,0,0.6)' : 'rgba(255,255,255,0.12)';
+    ctx2.lineWidth = maj ? 2 : 1;
+    ctx2.stroke();
+    if (maj) {
+      const nr = R - 19;
+      ctx2.fillStyle = 'rgba(247,127,0,0.5)';
+      ctx2.font = '7px "Share Tech Mono",monospace';
+      ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+      ctx2.fillText(i === 0 ? '60' : String(i), CX+nr*Math.cos(a), CY+nr*Math.sin(a));
+    }
+  }
+
+  // ── PAC-MAN TIMER ──
+  // Full circle filled in col color when idle (showing set time)
+  // When running: pie from 12-o'clock to setTime mark is "eaten away",
+  // remainder (from rem mark CCW back to 12) stays filled
+  //
+  // Visually: start angle = 12 o'clock (top)
+  //           end angle   = angle of remaining minutes
+  // The filled wedge goes CW from 12 to rem-mark (that's the remaining time)
+  // The eaten part goes from rem-mark to 12 (CCW = the elapsed time)
+  const col = getTimerColor();
+  const remMins = rem / 60;
+  const setMins = totalSec / 60;
+
+  // When not running: show full pie up to set time mark
+  const fillMins = running ? remMins : setMins;
+  const fillAngle = minToAngle(fillMins); // angle of the "tip" of remaining pie
+
+  if (fillMins > 0) {
+    // Draw filled pie from 12 o'clock CW to fillAngle
+    // This is the Pac-Man body = remaining time
+    ctx2.beginPath();
+    ctx2.moveTo(CX, CY);
+    ctx2.arc(CX, CY, R - 3, -Math.PI/2, fillAngle, false); // CW
+    ctx2.closePath();
+    ctx2.fillStyle = col + '30';
+    ctx2.fill();
+
+    // Bright arc border along the outer edge of remaining portion
+    ctx2.beginPath();
+    ctx2.arc(CX, CY, R - 3, -Math.PI/2, fillAngle, false);
+    ctx2.strokeStyle = col;
+    ctx2.lineWidth = 3;
+    ctx2.shadowColor = col;
+    ctx2.shadowBlur = 8;
+    ctx2.stroke();
+    ctx2.shadowBlur = 0;
+
+    // Line from center to 12 o'clock (start edge)
+    ctx2.beginPath();
+    ctx2.moveTo(CX, CY);
+    ctx2.lineTo(CX, CY - (R-3));
+    ctx2.strokeStyle = col;
+    ctx2.lineWidth = 1.5;
+    ctx2.stroke();
+
+    // Line from center to rem mark (the "mouth" leading edge)
+    ctx2.beginPath();
+    ctx2.moveTo(CX, CY);
+    ctx2.lineTo(CX + (R-3)*Math.cos(fillAngle), CY + (R-3)*Math.sin(fillAngle));
+    ctx2.strokeStyle = col;
+    ctx2.lineWidth = 1.5;
+    ctx2.stroke();
+  }
+
+  // ── RADAR SWEEP ──
+  if (sonarOn && running) {
+    const TRAIL = Math.PI * 2 / 3; // 120° trail
+    for (let i = 0; i < 40; i++) {
+      const frac = i / 40;
+      const a1 = radarAngle - TRAIL * (1 - frac);
+      const a2 = radarAngle - TRAIL * (1 - (i+1)/40);
+      ctx2.beginPath();
+      ctx2.moveTo(CX, CY);
+      ctx2.arc(CX, CY, R - 4, a1, a2);
+      ctx2.closePath();
+      ctx2.fillStyle = `rgba(45,198,83,${frac * 0.38})`;
+      ctx2.fill();
+    }
+    // Sweep line
+    ctx2.beginPath();
+    ctx2.moveTo(CX, CY);
+    ctx2.lineTo(CX + (R-4)*Math.cos(radarAngle), CY + (R-4)*Math.sin(radarAngle));
+    ctx2.strokeStyle = 'rgba(45,198,83,0.95)';
+    ctx2.lineWidth = 2;
+    ctx2.shadowColor = '#2dc653';
+    ctx2.shadowBlur = 8;
+    ctx2.stroke();
+    ctx2.shadowBlur = 0;
+    // Tip dot
+    ctx2.beginPath();
+    ctx2.arc(CX+(R-4)*Math.cos(radarAngle), CY+(R-4)*Math.sin(radarAngle), 3.5, 0, Math.PI*2);
+    ctx2.fillStyle = '#2dc653';
+    ctx2.shadowColor = '#2dc653';
+    ctx2.shadowBlur = 12;
+    ctx2.fill();
+    ctx2.shadowBlur = 0;
+  }
+
+  // Center dark circle
+  ctx2.beginPath();
+  ctx2.arc(CX, CY, 46, 0, Math.PI * 2);
+  ctx2.fillStyle = 'rgba(7,9,12,0.92)';
+  ctx2.fill();
+
+  // Outer border
+  ctx2.beginPath();
+  ctx2.arc(CX, CY, R, 0, Math.PI * 2);
+  ctx2.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx2.lineWidth = 1.5; ctx2.stroke();
+}
+
+// ── Drag to set time (only when stopped) ──
+let isDragging = false;
+function getAngle(e) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+  const ex = ((e.touches?e.touches[0].clientX:e.clientX)-rect.left)*sx;
+  const ey = ((e.touches?e.touches[0].clientY:e.clientY)-rect.top)*sy;
+  return Math.atan2(ey-CY, ex-CX);
+}
+function angleToMins(angle) {
+  let a = angle + Math.PI/2;
+  if (a < 0) a += Math.PI*2;
+  if (a >= Math.PI*2) a -= Math.PI*2;
+  const m = Math.round((a/(Math.PI*2))*60);
+  return Math.max(1, Math.min(60, m===0?60:m));
+}
+canvas.addEventListener('mousedown',  () => { if(!running) isDragging=true; });
+canvas.addEventListener('touchstart', e => { if(!running){isDragging=true;e.preventDefault();}},{passive:false});
+canvas.addEventListener('mousemove',  e => { if(!isDragging||running)return; applyDrag(e); });
+canvas.addEventListener('touchmove',  e => { if(!isDragging||running)return;e.preventDefault();applyDrag(e);},{passive:false});
+canvas.addEventListener('mouseup',   ()=>isDragging=false);
+canvas.addEventListener('touchend',  ()=>isDragging=false);
+function applyDrag(e) {
+  const m = angleToMins(getAngle(e));
+  totalSec=m*60; rem=totalSec;
+  const inp=document.getElementById('cMin'); if(inp) inp.value=m;
+  document.querySelectorAll('.p-btn').forEach(b=>b.classList.remove('on'));
+  updDisp(); drawAll();
+}
+
+// ── Preset buttons ──
+function setPreset(m, btn) {
+  if (running) return;
+  document.querySelectorAll('.p-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('cMin').value = m;
+  totalSec=m*60; rem=totalSec; updDisp(); drawAll();
+}
+function setCustom(v) {
+  if (running) return;
+  const m=Math.max(1,Math.min(60,parseInt(v)||1));
+  document.querySelectorAll('.p-btn').forEach(b=>b.classList.remove('on'));
+  totalSec=m*60; rem=totalSec; updDisp(); drawAll();
+}
+
+// ── Timer controls ──
+function startTimer() {
+  if (running) return;
+  if (rem<=0){totalSec=25*60;rem=totalSec;}
+  running=true;
+  document.getElementById('btnGo').style.display='none';
+  document.getElementById('btnHld').style.display='';
+  document.getElementById('tLbl').textContent='EXECUTING';
+  playAlert('start');
+  if (sonarOn){startSonarInterval();startRadarAnim();}
+  startMusicIfLoaded();
+  tiv=setInterval(tick,1000);
+}
+function pauseTimer() {
+  running=false; clearInterval(tiv); stopRadarAnim();
+  document.getElementById('btnGo').style.display='';
+  document.getElementById('btnHld').style.display='none';
+  document.getElementById('tLbl').textContent='HOLDING';
+  stopSonarInterval(); playAlert('pause'); pauseMusicIfLoaded();
+  drawAll(); showToast('MISSION PAUSED','warn');
+}
+function resetTimer() {
+  running=false; clearInterval(tiv); stopRadarAnim();
+  stopSonarInterval(); stopMusicIfLoaded();
+  const m=parseInt(document.getElementById('cMin').value)||25;
+  totalSec=m*60; rem=totalSec;
+  document.getElementById('btnGo').style.display='';
+  document.getElementById('btnHld').style.display='none';
+  document.getElementById('tLbl').textContent='STANDBY';
+  updDisp(); drawAll();
+}
+function tick() {
+  rem--;
+  updDisp(); drawAll();
+  if(rem===Math.floor(totalSec*0.25)){playAlert('warning');showToast('25% TIME REMAINING','warn');}
+  if(rem===60){playAlert('warning');showToast('60 SECONDS — STAY FOCUSED','warn');}
+  if(rem<=0){
+    running=false; clearInterval(tiv); stopRadarAnim();
+    stopSonarInterval(); stopMusicIfLoaded();
+    document.getElementById('btnGo').style.display='';
+    document.getElementById('btnHld').style.display='none';
+    document.getElementById('tLbl').textContent='MISSION COMPLETE';
+    playAlert('complete'); drawAll();
+    showToast('MISSION COMPLETE — OUTSTANDING');
+  }
+}
+function updDisp() {
+  const m=Math.floor(rem/60),s=rem%60;
+  document.getElementById('tDisp').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+function initApp() {
+  drawAll(); renderTasks(); renderDrawer();
+}
+
+// ══════════════════════════════════════════
+//  URGENCY LEVELS & SWATCHES
+// ══════════════════════════════════════════
+const COLS = [
+  { v:'#e63946', n:'CRITICAL',  lv:1, label:'LV1 — CRITICAL'  },
+  { v:'#f77f00', n:'HIGH',      lv:2, label:'LV2 — HIGH'      },
+  { v:'#fcbf49', n:'MEDIUM',    lv:3, label:'LV3 — MEDIUM'    },
+  { v:'#2dc653', n:'LOW',       lv:4, label:'LV4 — LOW'       },
+  { v:'#1a8fe3', n:'ROUTINE',   lv:5, label:'LV5 — ROUTINE'   },
+];
+let selCol = COLS[0].v;
+const swWrap = document.querySelector('.swatches');
+COLS.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'sw' + (c.v === selCol ? ' sel' : '');
+  d.style.background = c.v;
+  d.title = c.label;
+  d.onclick = () => {
+    selCol = c.v;
+    document.querySelectorAll('.sw').forEach(x => x.classList.remove('sel'));
+    d.classList.add('sel');
+  };
+  swWrap.appendChild(d);
+});
+
+// ══════════════════════════════════════════
+//  TASKS + localStorage persistence
+// ══════════════════════════════════════════
+function saveTasks() {
+  try { localStorage.setItem('focusops_tasks', JSON.stringify(tasks)); } catch(e) {}
+}
+function loadTasks() {
+  try { const d = localStorage.getItem('focusops_tasks'); return d ? JSON.parse(d) : []; } catch(e) { return []; }
+}
+
+let tasks = loadTasks();
+
+function addTask() {
+  const inp = document.getElementById('tInp'), txt = inp.value.trim();
+  if (!txt) return;
+  const col = COLS.find(c => c.v === selCol) || COLS[0];
+  tasks.push({ id: Date.now(), text: txt, color: col.v, level: col.lv, name: col.n, done: false });
+  inp.value = '';
+  saveTasks();
+  renderTasks();
+  renderDrawer();
+}
+
+function renderTasks() {
+  const l = document.getElementById('tList');
+  const sorted = [...tasks].sort((a,b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    return a.level - b.level;
+  });
+  if (!sorted.length) {
+    l.innerHTML = '<div class="empty">// NO OBJECTIVES LOADED //</div>';
+    updProg(); return;
+  }
+  l.innerHTML = sorted.map(t => `
+    <div class="task-item ${t.done?'done':''}" style="border-left-color:${t.color}">
+      <div class="chk ${t.done?'on':''}" onclick="tog(${t.id})">${t.done?'✓':''}</div>
+      <span class="t-txt">${esc(t.text)}</span>
+      <div class="t-priority" onclick="changePriority(${t.id})" title="Tap to change priority">
+        <div class="t-prio-dot" style="background:${t.color}"></div>
+        <span class="t-prio-lbl" style="color:${t.color}">LV${t.level}</span>
+      </div>
+      <button class="t-del" onclick="del(${t.id})">✕</button>
+    </div>`).join('');
+  updProg();
+  document.getElementById('catBadge').textContent = tasks.filter(t=>!t.done).length;
+}
+
+function changePriority(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  // Cycle to next level: 1→2→3→4→5→1
+  const nextLv = (t.level % 5) + 1;
+  const col = COLS.find(c => c.lv === nextLv);
+  if (!col) return;
+  t.level = col.lv;
+  t.color = col.v;
+  t.name  = col.n;
+  saveTasks(); renderTasks(); renderDrawer();
+}
+
+function tog(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  t.done = !t.done;
+  saveTasks(); renderTasks(); renderDrawer();
+  if (t.done) { playAlert('task'); showToast('OBJECTIVE CLEARED'); }
+}
+
+function del(id) {
+  tasks = tasks.filter(x => x.id !== id);
+  saveTasks(); renderTasks(); renderDrawer();
+}
+
+function updProg() {
+  const d = tasks.filter(t=>t.done).length, tot = tasks.length;
+  const p = tot ? Math.round(d/tot*100) : 0;
+  document.getElementById('pFill').style.width = p + '%';
+  document.getElementById('pTxt').textContent = d + '/' + tot;
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ══════════════════════════════════════════
+//  CATEGORY DRAWER
+// ══════════════════════════════════════════
+let activeTab = 0; // 0 = ALL, 1-5 = level
+
+function openDrawer() {
+  renderDrawer();
+  document.getElementById('catDrawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('catDrawer').classList.remove('open');
+}
+
+function setTab(idx) {
+  activeTab = idx;
+  renderDrawer();
+}
+
+function renderDrawer() {
+  const tabsEl = document.getElementById('catTabs');
+  const contentEl = document.getElementById('catContent');
+
+  // ── Build tabs ──
+  const allCount = tasks.filter(t=>!t.done).length;
+  let tabsHtml = `
+    <button class="cat-tab ${activeTab===0?'active':''}" onclick="setTab(0)" style="${activeTab===0?'border-bottom-color:var(--orange)':''}">
+      <div class="tab-dot" style="background:var(--orange)"></div>
+      ALL
+      <div class="tab-count">${allCount} left</div>
+    </button>`;
+
+  COLS.forEach((c, i) => {
+    const idx = i + 1;
+    const cnt = tasks.filter(t => t.level === c.lv && !t.done).length;
+    tabsHtml += `
+      <button class="cat-tab ${activeTab===idx?'active':''}" onclick="setTab(${idx})"
+        style="${activeTab===idx?`border-bottom-color:${c.v}`:''}">
+        <div class="tab-dot" style="background:${c.v}"></div>
+        ${c.n}
+        <div class="tab-count">${cnt} left</div>
+      </button>`;
+  });
+  tabsEl.innerHTML = tabsHtml;
+
+  // ── Build content ──
+  if (activeTab === 0) {
+    // ALL — grouped by urgency level
+    let html = '';
+    COLS.forEach(c => {
+      const group = tasks.filter(t => t.level === c.lv);
+      if (!group.length) return;
+      html += `<div class="cat-group">
+        <div class="cat-group-label">
+          <div class="cat-group-dot" style="background:${c.v}"></div>
+          ${c.label}
+          <span style="margin-left:auto">${group.filter(t=>!t.done).length} pending</span>
+        </div>`;
+      group.sort((a,b) => a.done-b.done).forEach(t => {
+        html += `<div class="cat-task-item ${t.done?'done':''}" style="border-left-color:${t.color}">
+          <div class="chk ${t.done?'on':''}" onclick="tog(${t.id});renderDrawer()">${t.done?'✓':''}</div>
+          <span class="t-txt">${esc(t.text)}</span>
+          <div class="t-priority" onclick="changePriority(${t.id});renderDrawer()" title="Tap to change priority">
+            <div class="t-prio-dot" style="background:${t.color}"></div>
+            <span class="t-prio-lbl" style="color:${t.color}">LV${t.level}</span>
+          </div>
+          <button class="t-del" onclick="del(${t.id});renderDrawer()">✕</button>
+        </div>`;
+      });
+      html += '</div>';
+    });
+    if (!html) html = '<div class="cat-empty">// NO OBJECTIVES REGISTERED //</div>';
+    contentEl.innerHTML = html;
+  } else {
+    // Single level
+    const c = COLS[activeTab - 1];
+    const group = tasks.filter(t => t.level === c.lv);
+    let html = `<div class="cat-section-header">
+      <div class="cat-color-bar" style="background:${c.v}"></div>
+      <div>
+        <div class="cat-section-title" style="color:${c.v}">${c.label}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:2px;margin-top:3px">${urgencyDesc(c.lv)}</div>
+      </div>
+      <div class="cat-section-sub">${group.filter(t=>!t.done).length} / ${group.length} PENDING</div>
+    </div>`;
+    if (!group.length) {
+      html += '<div class="cat-empty">// NO OBJECTIVES IN THIS LEVEL //</div>';
+    } else {
+      group.sort((a,b) => a.done-b.done).forEach(t => {
+        html += `<div class="cat-task-item ${t.done?'done':''}" style="border-left-color:${t.color}">
+          <div class="chk ${t.done?'on':''}" onclick="tog(${t.id});renderDrawer()">${t.done?'✓':''}</div>
+          <span class="t-txt">${esc(t.text)}</span>
+          <div class="t-priority" onclick="changePriority(${t.id});renderDrawer()" title="Tap to change priority">
+            <div class="t-prio-dot" style="background:${t.color}"></div>
+            <span class="t-prio-lbl" style="color:${t.color}">LV${t.level}</span>
+          </div>
+          <button class="t-del" onclick="del(${t.id});renderDrawer()">✕</button>
+        </div>`;
+      });
+    }
+    contentEl.innerHTML = html;
+  }
+}
+
+function urgencyDesc(lv) {
+  return ['','DO IT NOW — NO DELAY','IMPORTANT — ACT SOON','PLAN AND EXECUTE','CAN WAIT — DO WHEN ABLE','BACKLOG — LOW PRIORITY'][lv] || '';
+}
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+let tTimer;
+function showToast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.className = 'toast' + (type ? ' '+type : '');
+  el.textContent = '// ' + msg + ' //';
+  el.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// init
+updDisp();
+initApp();
+</script>
+</body>
+</html>
