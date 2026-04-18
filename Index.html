@@ -1,0 +1,2672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FOCUS OPS</title>
+
+<!-- PWA Meta Tags -->
+<meta name="application-name" content="FOCUS OPS">
+<meta name="description" content="ADHD Mission Control — Focus Timer & Objective Tracker">
+<meta name="theme-color" content="#f77f00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FOCUS OPS">
+
+<!-- PWA Manifest (inline data URI) -->
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22FOCUS%20OPS%20%E2%80%94%20Mission%20Control%22%2C%22short_name%22%3A%22FOCUS%20OPS%22%2C%22description%22%3A%22ADHD%20Mission%20Control%20%E2%80%94%20Focus%20Timer%20%26%20Objectives%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230a0c0f%22%2C%22theme_color%22%3A%22%23f77f00%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPD94bWwgdmVyc2lvbj0iMS4wIj8%2BPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzBhMGMwZiIvPjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9Ijc4IiBmaWxsPSJub25lIiBzdHJva2U9IiNmNzdmMDAiIHN0cm9rZS13aWR0aD0iNiIvPjxwb2x5Z29uIHBvaW50cz0iOTYsMjggMTQ0LDE0NiAxMTQsMTM0IDk2LDE2MCA3OCwxMzQgNDgsMTQ2IiBmaWxsPSIjZjc3ZjAwIi8%2BPC9zdmc%2B%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPD94bWwgdmVyc2lvbj0iMS4wIj8%2BPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzBhMGMwZiIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjA4IiBmaWxsPSJub25lIiBzdHJva2U9IiNmNzdmMDAiIHN0cm9rZS13aWR0aD0iMTYiLz48cG9seWdvbiBwb2ludHM9IjI1Niw3MiAzODQsMzg4IDMwNCwzNTYgMjU2LDQyOCAyMDgsMzU2IDEyOCwzODgiIGZpbGw9IiNmNzdmMDAiLz48L3N2Zz4%3D%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+
+<!-- Apple Touch Icon (SVG F-16 on dark background) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjI4IiBmaWxsPSIjMGEwYzBmIi8+PGNpcmNsZSBjeD0iOTAiIGN5PSI5MCIgcj0iNzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y3N2YwMCIgc3Ryb2tlLXdpZHRoPSI1Ii8+PHBvbHlnb24gcG9pbnRzPSI5MCwyNiAxMzUsMTM2IDEwNywxMjQgOTAsMTUwIDczLDEyNCA0NSwxMzYiIGZpbGw9IiNmNzdmMDAiLz48L3N2Zz4=">
+
+<!-- Service Worker registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'focusops-v1';
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html'])));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(clients.claim());
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+    });
+  `;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0a0c0f;
+    --surface: #111418;
+    --panel:   #161b22;
+    --border:  rgba(255,255,255,0.08);
+    --muted:   #4a5568;
+    --text:    #e8eaf0;
+    --red:     #e63946;
+    --orange:  #f77f00;
+    --yellow:  #fcbf49;
+    --green:   #2dc653;
+    --blue:    #1a8fe3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Barlow Condensed', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px 48px;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 39px, rgba(255,255,255,0.015) 40px);
+  }
+
+  /* HEADER */
+  header {
+    width: 100%; max-width: 880px; margin-bottom: 20px;
+    border-bottom: 2px solid var(--orange); padding-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .logo-main { font-size: 2.4rem; font-weight: 900; letter-spacing: 6px; line-height: 1; }
+  .logo-main span { color: var(--orange); }
+  .logo-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; }
+  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .status-dot { display: flex; align-items: center; gap: 6px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* SOUND CONTROLS - replaced by cockpit panel below */
+
+  /* GRID */
+  .app { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 880px; }
+  @media (max-width: 640px) { .app { grid-template-columns: 1fr; } .logo-main { font-size: 1.8rem; } }
+
+  /* PANELS */
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-top: 3px solid;
+    padding: 24px 20px; display: flex; flex-direction: column; gap: 16px;
+    position: relative; overflow: hidden;
+  }
+  .panel::before { content:''; position:absolute; top:0; right:0; width:60px; height:60px; background:linear-gradient(225deg,rgba(255,255,255,0.03),transparent 60%); pointer-events:none; }
+  .timer-panel { border-top-color: var(--orange); }
+  .tasks-panel { border-top-color: var(--blue); }
+  .panel-title { display:flex; align-items:center; gap:10px; font-family:'Share Tech Mono',monospace; font-size:0.82rem; letter-spacing:3px; text-transform:uppercase; color: var(--text); white-space:nowrap; }
+  .tag { font-size:0.58rem; font-weight:700; letter-spacing:2px; padding:2px 6px; color:#000; }
+  .timer-panel .tag { background: var(--orange); }
+  .tasks-panel  .tag { background: var(--blue); color:#fff; }
+
+  /* TIMER — Real radar sweep style */
+  .timer-core { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .ring-wrap { position:relative; width:220px; height:220px; cursor:grab; touch-action:none; }
+  .ring-wrap:active { cursor:grabbing; }
+  .ring-wrap svg { width:220px; height:220px; }
+  .timer-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none; }
+  .time-num { font-family:'Share Tech Mono',monospace; font-size:2.6rem; letter-spacing:2px; line-height:1; }
+  .time-lbl { font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:4px; color:var(--muted); text-transform:uppercase; margin-top:4px; }
+  .drag-hint { font-family:'Share Tech Mono',monospace; font-size:0.52rem; letter-spacing:2px; color:var(--muted); text-align:center; margin-top:-6px; }
+
+  .presets { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; width:100%; }
+  .p-btn { background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.85rem; letter-spacing:1px; padding:8px 4px; cursor:pointer; text-transform:uppercase; transition:all .15s; }
+  .p-btn:hover,.p-btn.on { background:var(--orange); border-color:var(--orange); color:#000; }
+  .custom-row { display:flex; gap:8px; align-items:center; width:100%; }
+  .custom-row input { flex:1; background:rgba(255,255,255,0.04); border:none; border-bottom:2px solid var(--orange); color:var(--text); font-family:'Share Tech Mono',monospace; font-size:1.2rem; padding:8px 12px; text-align:center; outline:none; }
+  .custom-row span { font-family:'Share Tech Mono',monospace; font-size:0.68rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; }
+
+  .controls { display:flex; gap:8px; width:100%; }
+  .btn { border:none; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:0.88rem; letter-spacing:2px; text-transform:uppercase; padding:11px 14px; cursor:pointer; flex:1; transition:all .15s; }
+  .btn:hover { filter:brightness(1.12); }
+  .btn:active { transform:scale(.97); }
+  .btn-go  { background:var(--green);  color:#000; }
+  .btn-hld { background:var(--yellow); color:#000; }
+  .btn-rst { background:rgba(255,255,255,0.07); color:var(--text); border:1px solid var(--border); }
+
+  /* TASKS */
+  .add-row { display:flex; gap:8px; }
+  .add-row input { flex:1; background:rgba(255,255,255,0.04); border:none; border-bottom:2px solid var(--blue); color:var(--text); font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:600; letter-spacing:1px; padding:9px 12px; outline:none; }
+  .add-row input::placeholder { color:var(--muted); }
+  .btn-add { background:var(--blue); color:#fff; font-size:1.4rem; padding:9px 16px; border:none; cursor:pointer; font-weight:700; transition:background .15s; }
+  .btn-add:hover { background:#1f9fff; }
+  .swatches { display:flex; gap:7px; align-items:center; }
+  .sw-lbl { font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-right:4px; }
+  .sw { width:20px; height:20px; cursor:pointer; border:2px solid transparent; transition:all .15s; }
+  .sw.sel { border-color:#fff; transform:scale(1.2); outline:1px solid rgba(255,255,255,.3); }
+  .prog-row { display:flex; align-items:center; gap:10px; }
+  .prog-bar { flex:1; height:4px; background:rgba(255,255,255,0.06); overflow:hidden; }
+  .prog-fill { height:100%; background:linear-gradient(90deg,var(--blue),var(--green)); transition:width .4s; }
+  .prog-txt { font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:var(--muted); white-space:nowrap; }
+  .task-list { display:flex; flex-direction:column; gap:6px; max-height:310px; overflow-y:auto; padding-right:2px; }
+  .task-list::-webkit-scrollbar { width:3px; }
+  .task-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); }
+  .task-item { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-left:3px solid; padding:9px 12px; animation:slideIn .2s ease; transition:opacity .2s; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  .task-item.done { opacity:.35; }
+  .task-item.done .t-txt { text-decoration:line-through; }
+  .task-item-top { display:flex; align-items:center; gap:8px; }
+  .task-item-bot { display:flex; align-items:center; gap:6px; padding-left:28px; }
+  .chk { width:20px; height:20px; border:1.5px solid rgba(255,255,255,.2); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:700; transition:all .15s; }
+  .chk:hover { border-color:var(--green); }
+  .chk.on { background:var(--green); border-color:var(--green); color:#000; }
+  .t-txt { flex:1; font-size:.93rem; font-weight:600; letter-spacing:.5px; word-break:break-word; line-height:1.3; }
+  .t-del { background:none; border:none; color:rgba(255,255,255,.15); font-size:.9rem; cursor:pointer; padding:2px 4px; transition:color .15s; font-weight:700; flex-shrink:0; }
+  .t-del:hover { color:var(--red); }
+  .t-priority { display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 6px; border-radius:4px; border:1px solid rgba(255,255,255,0.06); transition:all .15s; flex-shrink:0; }
+  .t-priority:hover { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.15); }
+  .t-prio-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .t-prio-lbl { font-family:'Share Tech Mono',monospace; font-size:0.5rem; letter-spacing:1px; }
+
+  /* Priority picker popup */
+  .prio-picker {
+    position: fixed; z-index: 600;
+    background: #1a1e26;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 6px;
+    padding: 6px;
+    display: flex; flex-direction: column; gap: 4px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.7);
+    min-width: 150px;
+  }
+  .prio-picker-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: 4px;
+    cursor: pointer; transition: background 0.12s;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text);
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .prio-picker-item:hover { background: rgba(255,255,255,0.08); }
+  .prio-picker-item.current { background: rgba(255,255,255,0.05); }
+  .prio-picker-swatch {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .prio-picker-overlay {
+    position: fixed; inset: 0; z-index: 599;
+  }
+  .empty { text-align:center; color:var(--muted); font-family:'Share Tech Mono',monospace; font-size:.72rem; letter-spacing:2px; padding:28px 0; text-transform:uppercase; }
+
+  .recur-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--muted); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.58rem; letter-spacing: 2px; padding: 5px 10px;
+    cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+  }
+  .recur-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+  .t-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+  .t-run-btn {
+    background: var(--green); border: none; color: #000;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.5rem;
+    letter-spacing: 1px; padding: 3px 6px; cursor: pointer;
+    text-transform: uppercase; transition: all 0.15s; border-radius: 2px;
+  }
+  .t-run-btn.active { background: var(--orange); }
+  .t-run-btn:hover { filter: brightness(1.15); }
+  .t-sched-btn {
+    background: rgba(26,143,227,0.15); border: 1px solid var(--blue); color: var(--blue);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.5rem;
+    letter-spacing: 1px; padding: 3px 6px; cursor: pointer;
+    text-transform: uppercase; transition: all 0.15s; border-radius: 2px;
+  }
+  .t-sched-btn:hover { background: var(--blue); color: #fff; }
+
+  .cal-week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; }
+  .cal-day-col { display: flex; flex-direction: column; gap: 5px; min-height: 120px; }
+  .cal-day-head {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.55rem;
+    letter-spacing: 1px; text-align: center; padding: 6px 2px;
+    border-bottom: 1px solid var(--border); text-transform: uppercase;
+  }
+  .cal-day-head.today { color: var(--orange); border-bottom-color: var(--orange); }
+  .cal-week-item {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-left: 3px solid var(--blue); padding: 6px 7px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; display: flex; flex-direction: column; gap: 3px;
+  }
+  .cal-week-item:hover { background: rgba(255,255,255,0.08); }
+  .cal-week-item.active-task { border-left-color: var(--orange); background: rgba(247,127,0,0.07); }
+  .cal-week-time { font-family:'Share Tech Mono',monospace; font-size:0.5rem; color:var(--muted); letter-spacing:1px; }
+  .cal-week-sessions { display:flex; gap:3px; flex-wrap:wrap; margin-top:2px; }
+  .cal-recur-badge { font-family:'Share Tech Mono',monospace; font-size:0.42rem; letter-spacing:1px; color:var(--muted); text-transform:uppercase; }
+
+  /* ══════════════════════════════════════════
+     COCKPIT PANEL — Realistic aircraft switches
+     ══════════════════════════════════════════ */
+  .cockpit-panel {
+    width: 100%; max-width: 880px;
+    background: linear-gradient(180deg, #1c1f24 0%, #141618 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-top: 3px solid #f77f00;
+    border-radius: 4px;
+    padding: 16px 20px 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .cockpit-panel::before {
+    content: 'AUDIO CONTROL PANEL';
+    position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+    letter-spacing: 4px; color: #f77f00; background: #141618;
+    padding: 0 12px; white-space: nowrap;
+  }
+  .cockpit-row {
+    display: flex; align-items: flex-end;
+    justify-content: space-evenly; /* equal spacing all sides */
+    width: 100%;
+  }
+
+  .sw-unit {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    user-select: none; cursor: pointer; flex: 1;
+  }
+  .sw-top-label {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.5rem;
+    letter-spacing: 2px; color: #8a90a0; text-transform: uppercase;
+    text-align: center; line-height: 1.4; white-space: nowrap;
+  }
+  .sw-led {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #1a1a1a; border: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .sw-led.on-green  { background: #2dc653; box-shadow: 0 0 7px #2dc653; }
+  .sw-led.on-blue   { background: #1a8fe3; box-shadow: 0 0 7px #1a8fe3; }
+  .sw-led.on-orange { background: #f77f00; box-shadow: 0 0 7px #f77f00; }
+
+  /* Housing plate */
+  .sw-housing {
+    width: 36px; height: 58px;
+    background: linear-gradient(160deg, #2e3138 0%, #20232a 50%, #2a2d35 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 2px solid rgba(0,0,0,0.6);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 2px 4px 10px rgba(0,0,0,0.6);
+  }
+  .sw-housing::before, .sw-housing::after {
+    content: '+'; position: absolute; font-size: 6px;
+    color: rgba(255,255,255,0.1); line-height: 1; font-weight: 700;
+  }
+  .sw-housing::before { top: 3px; left: 4px; }
+  .sw-housing::after  { bottom: 3px; right: 4px; }
+
+  /* Slot cut into housing */
+  .sw-slot {
+    position: absolute;
+    width: 8px; height: 42px;
+    background: #080a0d;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.9);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.9);
+  }
+
+  /* Bat = round ball slides inside slot — OFF = top, ON = bottom */
+  .sw-bat {
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #eef0f2, #b0b5bc 60%, #7a8088 100%);
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 0 3px 8px rgba(0,0,0,0.8);
+    top: 6px; left: 50%; transform: translateX(-50%);
+    transition: top 0.18s cubic-bezier(0.4,0,0.2,1);
+    z-index: 2;
+  }
+  /* ON = ball drops down */
+  .sw-unit.on .sw-bat { top: 28px; }
+  .sw-unit.on .sw-housing { box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 2px 4px 10px rgba(0,0,0,0.6), 0 0 8px rgba(45,198,83,0.2); }
+  /* ── URGENCY CATEGORIES ── */
+  .cat-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase;
+    padding: 7px 14px; cursor: pointer; transition: all 0.15s;
+    margin-top: 4px; width: 100%;
+  }
+  .cat-btn:hover { background: rgba(255,255,255,0.09); }
+  .cat-btn .badge {
+    margin-left: auto;
+    background: var(--orange); color: #000;
+    font-size: 0.6rem; font-weight: 700;
+    padding: 1px 6px; border-radius: 2px; min-width: 18px; text-align: center;
+  }
+
+  /* Full-screen drawer */
+  .cat-drawer {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--bg);
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .cat-drawer.open { transform: translateX(0); }
+
+  .cat-drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px 14px;
+    border-bottom: 2px solid var(--orange);
+    background: var(--panel);
+    flex-shrink: 0;
+  }
+  .cat-drawer-title {
+    font-size: 1.4rem; font-weight: 900; letter-spacing: 5px;
+  }
+  .cat-drawer-title span { color: var(--orange); }
+  .cat-close {
+    background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 2px; padding: 8px 16px;
+    cursor: pointer; text-transform: uppercase; transition: all 0.15s;
+  }
+  .cat-close:hover { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* Category tabs */
+  .cat-tabs {
+    display: flex; gap: 0; flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .cat-tab {
+    flex: 1; min-width: 80px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 8px;
+    border: none; border-bottom: 3px solid transparent;
+    background: var(--panel); color: var(--muted);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .cat-tab .tab-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  .cat-tab.active {
+    color: var(--text);
+    background: rgba(255,255,255,0.04);
+  }
+  .cat-tab .tab-count {
+    font-size: 0.55rem; color: var(--muted);
+  }
+
+  /* Category content */
+  .cat-content {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+  }
+  .cat-section { display: none; }
+  .cat-section.active { display: block; }
+
+  .cat-section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cat-color-bar {
+    width: 4px; height: 32px; border-radius: 2px; flex-shrink: 0;
+  }
+  .cat-section-title {
+    font-size: 1.1rem; font-weight: 900; letter-spacing: 4px;
+  }
+  .cat-section-sub {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+    color: var(--muted); letter-spacing: 2px; margin-left: auto;
+  }
+
+  .cat-task-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-left: 3px solid; padding: 11px 14px; margin-bottom: 7px;
+    animation: slideIn .2s ease;
+  }
+  .cat-task-item.done { opacity: 0.35; }
+  .cat-task-item.done .t-txt { text-decoration: line-through; }
+  .cat-empty {
+    text-align: center; color: var(--muted);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 3px; padding: 40px 0; text-transform: uppercase;
+  }
+
+  /* ALL tab progress bars */
+  .cat-group { margin-bottom: 28px; }
+  .cat-group-label {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 3px; color: var(--muted); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .cat-group-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  /* ══════════════════════════════════════════
+     CALENDAR DRAWER
+     ══════════════════════════════════════════ */
+  .cal-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase;
+    padding: 7px 14px; cursor: pointer; transition: all 0.15s;
+    margin-top: 4px; width: 100%;
+  }
+  .cal-btn:hover { background: rgba(255,255,255,0.09); }
+
+  .cal-drawer {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--bg);
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .cal-drawer.open { transform: translateX(0); }
+
+  .cal-drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px 14px;
+    border-bottom: 2px solid var(--blue);
+    background: var(--panel); flex-shrink: 0;
+  }
+  .cal-drawer-title { font-size: 1.4rem; font-weight: 900; letter-spacing: 5px; }
+  .cal-drawer-title span { color: var(--blue); }
+  .cal-close {
+    background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 2px; padding: 8px 16px;
+    cursor: pointer; text-transform: uppercase;
+  }
+  .cal-close:hover { background: var(--red); border-color: var(--red); }
+
+  .cal-body { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* Add scheduled task form */
+  .cal-form {
+    background: var(--panel); border: 1px solid var(--border);
+    border-top: 2px solid var(--blue); padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .cal-form-title {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 3px; color: var(--blue); text-transform: uppercase;
+  }
+  .cal-form-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cal-input {
+    background: rgba(255,255,255,0.04); border: none;
+    border-bottom: 2px solid var(--border); color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem;
+    font-weight: 600; padding: 7px 10px; outline: none;
+    transition: border-color 0.2s; flex: 1; min-width: 120px;
+  }
+  .cal-input:focus { border-bottom-color: var(--blue); }
+  .cal-input::placeholder { color: var(--muted); }
+  .cal-input-sm { max-width: 90px; flex: 0 0 90px; }
+  .cal-btn-add {
+    background: var(--blue); color: #fff; border: none;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 800;
+    font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;
+    padding: 8px 18px; cursor: pointer; white-space: nowrap;
+  }
+  .cal-btn-add:hover { background: #1f9fff; }
+
+  /* Day groups */
+  .cal-day-group { display: flex; flex-direction: column; gap: 8px; }
+  .cal-day-label {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 3px; color: var(--orange); text-transform: uppercase;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+
+  /* Scheduled task card */
+  .cal-task {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-left: 3px solid var(--blue); padding: 10px 14px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .cal-task-top { display: flex; align-items: center; gap: 10px; }
+  .cal-task-time {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+    color: var(--orange); letter-spacing: 1px; flex-shrink: 0;
+  }
+  .cal-task-name { font-size: 0.95rem; font-weight: 700; flex: 1; }
+  .cal-task-dur {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.62rem;
+    color: var(--muted); flex-shrink: 0;
+  }
+  .cal-task-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .cal-run-btn {
+    background: var(--green); color: #000; border: none;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.55rem;
+    letter-spacing: 2px; text-transform: uppercase; padding: 4px 10px;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .cal-run-btn:hover { filter: brightness(1.15); }
+  .cal-del-btn {
+    background: none; border: none; color: rgba(255,255,255,0.15);
+    font-size: 0.85rem; cursor: pointer; padding: 2px 5px;
+    transition: color 0.15s;
+  }
+  .cal-del-btn:hover { color: var(--red); }
+
+  /* F-16 session icons */
+  .sessions-row { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .session-icon {
+    display: inline-block; font-size: 0.9rem; line-height: 1;
+    filter: drop-shadow(0 0 3px currentColor);
+    cursor: default;
+  }
+  .session-total {
+    font-family: 'Share Tech Mono', monospace; font-size: 0.52rem;
+    color: var(--muted); letter-spacing: 1px; margin-left: 4px;
+  }
+
+  /* Timer task selector */
+  .timer-task-sel {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-left: 3px solid var(--blue); padding: 8px 12px;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    transition: all 0.15s; width: 100%;
+  }
+  .timer-task-sel:hover { background: rgba(255,255,255,0.07); }
+  .timer-task-sel .sel-name {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem;
+    font-weight: 600; flex: 1; color: var(--blue);
+  }
+  .timer-task-sel .sel-clear {
+    font-size: 0.8rem; color: var(--muted); background: none; border: none;
+    cursor: pointer; padding: 0 4px;
+  }
+  .timer-task-sel .sel-clear:hover { color: var(--red); }
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(70px);
+    background: var(--panel); border: 1px solid var(--green); border-left: 4px solid var(--green);
+    color: var(--green); font-family: 'Share Tech Mono', monospace; font-size: .72rem;
+    letter-spacing: 2px; text-transform: uppercase; padding: 11px 22px;
+    transition: transform .3s cubic-bezier(.34,1.4,.64,1), opacity .3s;
+    opacity: 0; pointer-events: none; z-index: 999; white-space: nowrap;
+  }
+  .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+  .toast.warn { border-color:var(--orange); color:var(--orange); }
+  .toast.alert { border-color:var(--red); color:var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo-main">FOCUS<span>OPS</span></div>
+    <div class="logo-sub">ADHD Mission Control // v24.0</div>
+  </div>
+  <div class="header-right">
+    <div class="status-dot"><span class="dot"></span> SYSTEM ONLINE &nbsp;|&nbsp; <span id="clk">--:--:--</span></div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- TIMER -->
+  <div class="panel timer-panel">
+    <div class="panel-title"><span class="tag">OPS</span> MISSION TIMER</div>
+    <div class="timer-core">
+
+      <!-- Active objective name — ABOVE the radar -->
+      <div id="timerTaskSel" class="timer-task-sel" style="margin-bottom:2px">
+        <div id="timerNoTask" style="display:flex;align-items:center;gap:8px;width:100%;justify-content:center">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);flex-shrink:0;animation:blink 1.5s ease-in-out infinite"></div>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--red)">SELECT AN OBJECTIVE TO RUN TIMER</span>
+        </div>
+        <div id="timerHasTask" style="display:none;align-items:center;gap:8px;width:100%;justify-content:center">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 6px var(--blue);flex-shrink:0"></div>
+          <span id="timerTaskName" style="font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:800;letter-spacing:2px;color:var(--blue);text-align:center;flex:1">—</span>
+          <button class="sel-clear" onclick="clearTimerTask()" title="Clear" style="flex-shrink:0;color:rgba(255,255,255,0.3);background:none;border:none;font-size:1rem;cursor:pointer">✕</button>
+        </div>
+      </div>
+
+      <div class="ring-wrap" id="radarWrap">
+        <canvas id="radarCanvas" width="220" height="220"></canvas>
+        <div class="timer-center">
+          <div class="time-num" id="tDisp">60:00</div>
+          <div class="time-lbl" id="tLbl">STANDBY</div>
+        </div>
+      </div>
+
+      <div class="presets">
+        <button class="p-btn" onclick="setPreset(15,this)">15 MIN</button>
+        <button class="p-btn" onclick="setPreset(30,this)">30 MIN</button>
+        <button class="p-btn" onclick="setPreset(45,this)">45 MIN</button>
+        <button class="p-btn on" onclick="setPreset(60,this)">60 MIN</button>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-go"  id="btnGo"  onclick="startTimer()">▶ EXECUTE</button>
+        <button class="btn btn-hld" id="btnHld" onclick="pauseTimer()" style="display:none">⏸ HOLD</button>
+        <button class="btn btn-rst" onclick="resetTimer()">↺ ABORT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBJECTIVES -->
+  <div class="panel tasks-panel">
+    <div class="panel-title"><span class="tag">OBJ</span> MISSION OBJECTIVES</div>
+    <div class="prog-row">
+      <div class="prog-bar"><div class="prog-fill" id="pFill" style="width:0%"></div></div>
+      <div class="prog-txt" id="pTxt">0/0</div>
+    </div>
+    <div class="task-list" id="tList"><div class="empty">// NO OBJECTIVES SCHEDULED TODAY //</div></div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.52rem;letter-spacing:2px;color:var(--muted);text-align:center;padding:6px 0;opacity:0.6">
+      ← SWIPE LEFT: URGENCY &nbsp;|&nbsp; SWIPE RIGHT: SCHEDULE →
+    </div>
+  </div>
+
+</div
+
+<!-- COCKPIT AUDIO PANEL -->
+  <div class="cockpit-panel">
+    <div class="cockpit-row">
+
+      <!-- SONAR -->
+      <div class="sw-unit" id="swSonar" onclick="flipSwitch('swSonar', toggleSonar)">
+        <div class="sw-top-label">SONAR</div>
+        <div class="sw-led" id="ledSonar"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indSonar">OFF</div>
+      </div>
+
+      <div class="cockpit-divider"></div>
+
+      <!-- LOAD MUSIC -->
+      <div class="sw-unit" id="swMusicLoad" onclick="flipMusicLoad()">
+        <div class="sw-top-label">LOAD MUSIC</div>
+        <div class="sw-led on-blue" id="ledMusicLoad"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indMusic">—</div>
+      </div>
+
+      <!-- MUSIC ON/OFF -->
+      <div class="sw-unit on" id="swMusicEn" onclick="flipSwitch('swMusicEn', toggleMusicEnabled)">
+        <div class="sw-top-label">MUSIC</div>
+        <div class="sw-led on-green" id="ledMusicEn"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indMusicEn">ON</div>
+      </div>
+
+      <div class="cockpit-divider"></div>
+
+      <!-- ALERTS -->
+      <div class="sw-unit on" id="swAlerts" onclick="flipSwitch('swAlerts', toggleAlerts)">
+        <div class="sw-top-label">ALERTS</div>
+        <div class="sw-led on-green" id="ledAlerts"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indAlerts">ON</div>
+      </div>
+
+      <div class="cockpit-divider"></div>
+
+      <!-- UI SFX -->
+      <div class="sw-unit on" id="swUisfx" onclick="flipSwitch('swUisfx', toggleUiSfx)">
+        <div class="sw-top-label">UI SFX</div>
+        <div class="sw-led on-green" id="ledUisfx"></div>
+        <div class="sw-housing">
+          <div class="sw-slot"></div>
+          <div class="sw-bat"></div>
+        </div>
+        <div class="sw-bot-label" id="indUisfx">ON</div>
+      </div>
+
+    </div>
+  </div>
+  <!-- Volume control button -->
+  <div style="display:flex;justify-content:flex-end;padding:4px 12px 0;margin-top:-4px;">
+    <button onclick="openVolPanel()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;padding:4px 12px;cursor:pointer;text-transform:uppercase;" title="Volume control">🔊 VOLUME</button>
+  </div>
+  <input type="file" id="musicFileInput" accept="audio/*" style="display:none" onchange="loadMusicFile(this)"/>
+  </div>
+</header>>
+
+<!-- SCHEDULE DIALOG (modal over everything) -->
+<div id="schedDialog" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;overflow-y:auto;">
+  <div style="background:#161b22;border:1px solid rgba(255,255,255,0.12);border-top:3px solid var(--blue);padding:20px;width:90%;max-width:380px;display:flex;flex-direction:column;gap:12px;margin:auto;">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:3px;color:var(--blue)">// SCHEDULE TASK</div>
+    <div id="schedTaskLabel" style="font-size:1.05rem;font-weight:700;color:var(--text)"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--muted)">DATE</label>
+      <input class="cal-input" type="date" id="schedDate" oninput="onSchedDateChange()"/>
+
+      <!-- Existing tasks on selected date -->
+      <div id="schedDatePreview" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:8px 10px;font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:1px;color:var(--muted);"></div>
+
+      <label style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--muted)">TIME (optional)</label>
+      <input class="cal-input" type="time" id="schedTime"/>
+
+      <label style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--muted)">DURATION — swipe ↕ or tap ±</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="adjDur(-5)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-size:1.1rem;width:36px;height:36px;cursor:pointer;border-radius:4px;flex-shrink:0;">−</button>
+        <div id="schedDurDisplay" style="flex:1;text-align:center;font-family:'Share Tech Mono',monospace;font-size:1.5rem;color:var(--text);font-weight:700;cursor:ns-resize;user-select:none;padding:6px 0;" 
+          ontouchstart="durTouchStart(event)" ontouchmove="durTouchMove(event)"
+          onmousedown="durMouseStart(event)">25</div>
+        <button onclick="adjDur(5)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-size:1.1rem;width:36px;height:36px;cursor:pointer;border-radius:4px;flex-shrink:0;">+</button>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--muted);flex-shrink:0">MIN</span>
+      </div>
+
+      <label style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--muted)">RECURRENCE</label>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;" id="schedRecurBtns">
+        <button class="recur-btn active" data-r="once">ONCE</button>
+        <button class="recur-btn" data-r="daily">DAILY</button>
+        <button class="recur-btn" data-r="weekly">WEEKLY</button>
+        <button class="recur-btn" data-r="monthly">MONTHLY</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="cal-btn-add" onclick="confirmSchedule()" style="flex:1">✓ SCHEDULE</button>
+      <button onclick="closeSchedDialog()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;padding:8px 14px;cursor:pointer;">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR DRAWER -->
+<div class="cal-drawer" id="calDrawer">
+  <div class="cal-drawer-header" style="flex-direction:column;gap:10px;padding:14px 20px;cursor:grab;" id="calDrawerHeader">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+      <div class="cal-drawer-title" style="font-size:1.1rem;">MISSION<span>SCHEDULE</span></div>
+      <div style="display:flex;gap:6px;">
+        <button id="btnViewWeek" onclick="setCalView('week')" style="background:var(--blue);border:1px solid var(--blue);color:#fff;font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;padding:5px 9px;cursor:pointer;text-transform:uppercase;">WEEK</button>
+        <button id="btnViewMonth" onclick="setCalView('month')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;padding:5px 9px;cursor:pointer;text-transform:uppercase;">MONTH</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;width:100%;">
+      <button onclick="calOffset--; renderCal()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.9rem;padding:6px 16px;cursor:pointer;">◀</button>
+      <div id="calPeriodLabel" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:var(--muted);white-space:nowrap;min-width:140px;text-align:center;"></div>
+      <button onclick="calOffset++; renderCal()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.9rem;padding:6px 16px;cursor:pointer;">▶</button>
+    </div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.48rem;letter-spacing:2px;color:var(--muted);text-align:center;opacity:0.5">SWIPE LEFT TO CLOSE</div>
+  </div>
+  <div class="cal-body" id="calBody"></div>
+</div>
+
+<!-- CATEGORIES DRAWER -->
+<div class="cat-drawer" id="catDrawer">
+  <div class="cat-drawer-header" id="catDrawerHeader">
+    <div style="width:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="cat-drawer-title">URGENCY<span>BOARD</span></div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.48rem;letter-spacing:2px;color:var(--muted);opacity:0.6">SWIPE RIGHT TO CLOSE</div>
+      </div>
+      <div class="add-row" style="margin:0">
+        <input type="text" id="tInp" placeholder="ADD NEW OBJECTIVE..." maxlength="80" onkeydown="if(event.key==='Enter')addTask()"/>
+        <button class="btn-add" onclick="addTask()">+</button>
+      </div>
+      <div class="swatches" style="margin-top:8px"><span class="sw-lbl">URGENCY:</span></div>
+    </div>
+  </div>
+  <div class="cat-tabs" id="catTabs"></div>
+  <div class="cat-content" id="catContent"></div>
+</div>
+
+<!-- VOLUME PANEL -->
+<div id="volPanel" style="display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,0.82);align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid rgba(255,255,255,0.12);border-top:3px solid var(--orange);padding:24px;width:90%;max-width:360px;display:flex;flex-direction:column;gap:18px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:3px;color:var(--orange)">// VOLUME CONTROL</div>
+      <button onclick="closeVolPanel()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+    <div id="volSliders"></div>
+  </div>
+</div>
+
+<!-- EDIT SCHEDULE DIALOG -->
+<div id="editSchedDialog" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;overflow-y:auto;">
+  <div style="background:#161b22;border:1px solid rgba(255,255,255,0.12);border-top:3px solid var(--orange);padding:20px;width:90%;max-width:380px;display:flex;flex-direction:column;gap:12px;margin:auto;">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:3px;color:var(--orange)">// EDIT SCHEDULE</div>
+    <div id="editSchedLabel" style="font-size:1.05rem;font-weight:700;color:var(--text)"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--muted)">DATE</label>
+      <input class="cal-input" type="date" id="editSchedDate"/>
+      <label style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--muted)">TIME (optional)</label>
+      <input class="cal-input" type="time" id="editSchedTime"/>
+      <label style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:2px;color:var(--muted)">DURATION — tap ± or swipe ↕</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="adjEditDur(-5)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-size:1.1rem;width:36px;height:36px;cursor:pointer;border-radius:4px;flex-shrink:0;">−</button>
+        <div id="editDurDisplay" style="flex:1;text-align:center;font-family:'Share Tech Mono',monospace;font-size:1.5rem;color:var(--text);font-weight:700;cursor:ns-resize;user-select:none;padding:6px 0;"
+          ontouchstart="editDurTouchStart(event)" ontouchmove="editDurTouchMove(event)"
+          onmousedown="editDurMouseStart(event)">45</div>
+        <button onclick="adjEditDur(5)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-size:1.1rem;width:36px;height:36px;cursor:pointer;border-radius:4px;flex-shrink:0;">+</button>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--muted);flex-shrink:0">MIN</span>
+      </div>
+      <div id="editRecurNote" style="font-family:'Share Tech Mono',monospace;font-size:0.52rem;color:var(--muted);padding:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)"></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="confirmEditSchedule()" class="cal-btn-add" style="flex:1">✓ SAVE</button>
+      <button onclick="closeEditSchedDialog()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;padding:8px 14px;cursor:pointer;">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- TIMER FOCUS OVERLAY (custom fullscreen) -->
+<div id="timerOverlay" style="display:none;position:fixed;inset:0;z-index:900;background:#07090c;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <!-- Objective name -->
+  <div id="ovObjective" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.4rem;letter-spacing:3px;color:var(--blue);text-align:center;padding:0 24px;max-width:90vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color 0.5s"></div>
+  <!-- Big canvas -->
+  <canvas id="ovCanvas" style="touch-action:none;cursor:pointer"></canvas>
+  <!-- Time display overlaid -->
+  <div style="margin-top:-8px;display:flex;flex-direction:column;align-items:center;gap:4px;">
+    <div id="ovDisp" style="font-family:'Share Tech Mono',monospace;font-size:3rem;letter-spacing:4px;color:var(--text);line-height:1">60:00</div>
+    <div id="ovLbl" style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:4px;color:var(--muted);text-transform:uppercase">EXECUTING</div>
+  </div>
+  <!-- Hint -->
+  <div style="font-family:'Share Tech Mono',monospace;font-size:0.48rem;letter-spacing:2px;color:rgba(255,255,255,0.15);text-align:center">TAP TO EXIT · DOUBLE TAP TO RETURN</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  AUDIO ENGINE
+// ══════════════════════════════════════════
+let actx = null;
+let musicNodes = null;
+let sonarIv = null;
+let sonarOn = false;
+let alertsOn = true;
+let musicEnabled = true;
+let uiSfxOn = true;
+
+// ── Volume levels (0.0–1.0) ──
+const VOL = { music: 0.5, sfx: 0.7, sonar: 0.6, alerts: 0.8 };
+
+function openVolPanel() {
+  const el = document.getElementById('volPanel');
+  el.style.display = 'flex';
+  const channels = [
+    {key:'music', label:'MUSIC', color:'var(--blue)'},
+    {key:'sonar', label:'SONAR', color:'var(--green)'},
+    {key:'alerts',label:'ALERTS',color:'var(--orange)'},
+    {key:'sfx',   label:'UI SFX',color:'var(--muted)'},
+  ];
+  document.getElementById('volSliders').innerHTML = channels.map(c => `
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:${c.color}">${c.label}</span>
+        <span id="volLbl_${c.key}" style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--muted)">${Math.round(VOL[c.key]*100)}%</span>
+      </div>
+      <input type="range" min="0" max="100" value="${Math.round(VOL[c.key]*100)}"
+        oninput="setVol('${c.key}',this.value)"
+        style="width:100%;accent-color:${c.color};cursor:pointer"/>
+    </div>`).join('');
+}
+function closeVolPanel() { document.getElementById('volPanel').style.display='none'; }
+function setVol(key, val) {
+  VOL[key] = parseInt(val)/100;
+  const lbl = document.getElementById('volLbl_'+key);
+  if (lbl) lbl.textContent = val+'%';
+  if (key==='music' && musicAudio) musicAudio.volume = VOL.music * 0.5;
+}
+
+function playUiClick() {
+  if (!uiSfxOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = 'sine'; o.frequency.value = 1200;
+  g.gain.setValueAtTime(0.08 * VOL.sfx, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+  o.start(now); o.stop(now + 0.07);
+}
+
+function playUiSwipe() {
+  if (!uiSfxOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = 'sine';
+  o.frequency.setValueAtTime(600, now);
+  o.frequency.exponentialRampToValueAtTime(900, now + 0.08);
+  g.gain.setValueAtTime(0.06 * VOL.sfx, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  o.start(now); o.stop(now + 0.11);
+}
+
+// Mechanical safe-dial click — only fires when finger moves
+let lastDragAngle = null;
+const LOCK_STEP_DEG = 6; // degrees of movement per click
+
+function playFillSound(durationMs) {
+  if (!uiSfxOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  const dur = durationMs / 1000;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = 'sine';
+  // Sweep from 120Hz up to 600Hz over the fill duration
+  o.frequency.setValueAtTime(120, now);
+  o.frequency.exponentialRampToValueAtTime(600, now + dur * 0.85);
+  o.frequency.exponentialRampToValueAtTime(800, now + dur);
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.07 * VOL.sfx, now + 0.05);
+  g.gain.setValueAtTime(0.07 * VOL.sfx, now + dur - 0.08);
+  g.gain.linearRampToValueAtTime(0, now + dur);
+  o.start(now); o.stop(now + dur + 0.05);
+}
+
+function playLockTick() {
+  if (!uiSfxOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  // Layered: sharp transient + short resonance
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.06, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i=0; i<d.length; i++) {
+    d[i] = (Math.random()*2-1) * Math.exp(-i/(ctx.sampleRate*0.008));
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const g = ctx.createGain();
+  const filt = ctx.createBiquadFilter();
+  filt.type = 'bandpass'; filt.frequency.value = 2200; filt.Q.value = 0.8;
+  src.connect(filt); filt.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(0.35 * VOL.sfx, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now+0.05);
+  src.start(now); src.stop(now+0.06);
+}
+
+function checkLockTick(angle) {
+  if (lastDragAngle === null) { lastDragAngle = angle; return; }
+  const diff = Math.abs((angle - lastDragAngle) * 180 / Math.PI);
+  if (diff >= LOCK_STEP_DEG) {
+    playLockTick();
+    lastDragAngle = angle;
+  }
+}
+
+function startLockSound() { lastDragAngle = null; }
+function stopLockSound()  { lastDragAngle = null; } // music on/off toggle
+
+function getCtx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+/* ══════════════════════════════════════════
+   REAL SONAR PING
+   — Pure sine at ~1kHz, short sharp attack,
+     long exponential tail, plus a reverb
+     convolver to simulate metal hull resonance
+   ══════════════════════════════════════════ */
+function playSonarPing() {
+  syncRadarToSonar(); // reset radar to 12 o'clock on each ping
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+
+  // --- reverb impulse (simulates metallic room) ---
+  const revLen = ctx.sampleRate * 2.2;
+  const revBuf = ctx.createBuffer(2, revLen, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = revBuf.getChannelData(ch);
+    for (let i = 0; i < revLen; i++) {
+      // exponential decay noise — mimics hull resonance
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / revLen, 4.5);
+    }
+  }
+  const reverb = ctx.createConvolver();
+  reverb.buffer = revBuf;
+  const reverbGain = ctx.createGain();
+  reverbGain.gain.value = 0.35;
+  reverb.connect(reverbGain);
+  reverbGain.connect(ctx.destination);
+
+  // --- main ping ---
+  const osc = ctx.createOscillator();
+  const envGain = ctx.createGain();
+  osc.connect(envGain);
+  envGain.connect(ctx.destination); // dry
+  envGain.connect(reverb);          // wet
+
+  osc.type = 'sine';
+  // Real sonar pings are around 1–3 kHz, very clean sine
+  osc.frequency.setValueAtTime(1050, now);
+  // Tiny frequency drop — characteristic of real sonar
+  osc.frequency.exponentialRampToValueAtTime(980, now + 0.06);
+
+  // Very fast attack, then long natural decay
+  envGain.gain.setValueAtTime(0, now);
+  envGain.gain.linearRampToValueAtTime(0.55 * VOL.sonar, now + 0.008);
+  envGain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+
+  osc.start(now);
+  osc.stop(now + 1.9);
+
+  // --- subtle harmonic overtone (hull resonance character) ---
+  const osc2 = ctx.createOscillator();
+  const env2 = ctx.createGain();
+  osc2.connect(env2); env2.connect(reverb);
+  osc2.type = 'sine';
+  osc2.frequency.value = 2100; // 2nd harmonic
+  env2.gain.setValueAtTime(0, now);
+  env2.gain.linearRampToValueAtTime(0.08, now + 0.008);
+  env2.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+  osc2.start(now); osc2.stop(now + 1.0);
+
+  triggerSonarPulse();
+}
+
+function triggerSonarPulse() {
+  // visual pulse drawn on canvas now — nothing to do here
+}
+
+function startSonarInterval() {
+  if (sonarIv) clearInterval(sonarIv);
+  playSonarPing();
+  sonarIv = setInterval(() => { if (running && sonarOn) playSonarPing(); }, 5000);
+}
+
+function stopSonarInterval() {
+  if (sonarIv) { clearInterval(sonarIv); sonarIv = null; }
+}
+
+/* ══════════════════════════════════════════
+   MUSIC — user uploads their own MP3/file
+   No external URLs, no blocking, works 100%
+   ══════════════════════════════════════════ */
+let musicAudio = null;
+
+/* ── ALERT SOUNDS ── */
+function playAlert(type) {
+  if (!alertsOn) return;
+  const ctx = getCtx();
+  const now = ctx.currentTime;
+  const v = VOL.alerts;
+
+  if (type === 'start') {
+    [0, 0.18, 0.36].forEach((offset, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square'; o.frequency.value = 440 * Math.pow(1.25, i);
+      g.gain.setValueAtTime(0, now+offset);
+      g.gain.linearRampToValueAtTime(0.12*v, now+offset+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now+offset+0.15);
+      o.start(now+offset); o.stop(now+offset+0.15);
+    });
+  } else if (type === 'pause') {
+    [0, 0.2].forEach((offset, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square'; o.frequency.value = 660 - i*220;
+      g.gain.setValueAtTime(0, now+offset);
+      g.gain.linearRampToValueAtTime(0.1*v, now+offset+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now+offset+0.18);
+      o.start(now+offset); o.stop(now+offset+0.18);
+    });
+  } else if (type === 'warning') {
+    [0, 0.15, 0.30, 0.45].forEach(offset => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square'; o.frequency.value = 1100;
+      g.gain.setValueAtTime(0, now+offset);
+      g.gain.linearRampToValueAtTime(0.13*v, now+offset+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now+offset+0.12);
+      o.start(now+offset); o.stop(now+offset+0.12);
+    });
+  } else if (type === 'complete') {
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square'; o.frequency.value = freq;
+      const t = now + i*0.22;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.15*v, t+0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+      o.start(t); o.stop(t+0.4);
+    });
+  } else if (type === 'task') {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine'; o.frequency.value = 880;
+    o.frequency.exponentialRampToValueAtTime(1320, now+0.12);
+    g.gain.setValueAtTime(0.1*v, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now+0.2);
+    o.start(now); o.stop(now+0.2);
+  }
+}
+
+function playCountdownBeep(secLeft) {
+  if (!alertsOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type = 'square';
+  o.frequency.value = secLeft <= 3 ? 1200 : 880;
+  const vol = (secLeft <= 3 ? 0.18 : 0.12) * VOL.alerts;
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(vol, now + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+  o.start(now); o.stop(now + 0.16);
+}
+function flipSwitch(id, callback) {
+  const unit = document.getElementById(id);
+  unit.classList.toggle('on');
+  callback();
+}
+
+function setSwitchOn(id, on) {
+  const unit = document.getElementById(id);
+  if (on) unit.classList.add('on'); else unit.classList.remove('on');
+}
+
+function flipMusicLoad() {
+  document.getElementById('musicFileInput').click();
+}
+
+function loadMusicFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  if (musicAudio) { musicAudio.pause(); musicAudio = null; }
+  musicAudio = new Audio(url);
+  musicAudio.volume = 0;
+  musicAudio.loop = true;
+  setSwitchOn('swMusicLoad', true);
+  document.getElementById('ledMusicLoad').className = 'sw-led on-green';
+  document.getElementById('indMusic').textContent = 'READY';
+  document.getElementById('swMusicLoad').querySelector('.sw-bot-label').style.color = '#2dc653';
+  showToast('MUSIC READY — STARTS WITH TIMER');
+}
+
+/* ── TOGGLES ── */
+function toggleSonar() {
+  sonarOn = !sonarOn;
+  document.getElementById('indSonar').textContent = sonarOn ? 'ON' : 'OFF';
+  document.getElementById('ledSonar').className = 'sw-led ' + (sonarOn ? 'on-orange' : '');
+  if (sonarOn && running) {
+    startSonarInterval();
+    startRadarAnim();   // ← fix: also start the animation loop
+  } else {
+    stopSonarInterval();
+    stopRadarAnim();
+    drawAll(); // redraw without radar
+  }
+}
+
+function toggleMusicEnabled() {
+  musicEnabled = !musicEnabled;
+  document.getElementById('indMusicEn').textContent = musicEnabled ? 'ON' : 'OFF';
+  document.getElementById('ledMusicEn').className = 'sw-led ' + (musicEnabled ? 'on-green' : '');
+  if (!musicEnabled && musicAudio) pauseMusicIfLoaded();
+  else if (musicEnabled && running && musicAudio) startMusicIfLoaded();
+}
+
+function toggleUiSfx() {
+  uiSfxOn = !uiSfxOn;
+  document.getElementById('indUisfx').textContent = uiSfxOn ? 'ON' : 'OFF';
+  document.getElementById('ledUisfx').className = 'sw-led ' + (uiSfxOn ? 'on-green' : '');
+}
+
+function toggleAlerts() {
+  alertsOn = !alertsOn;
+  document.getElementById('indAlerts').textContent = alertsOn ? 'ON' : 'OFF';
+  document.getElementById('ledAlerts').className = 'sw-led ' + (alertsOn ? 'on-green' : '');
+}
+
+// Music now controlled by timer — no manual toggle needed
+function startMusicIfLoaded() {
+  if (!musicAudio || !musicEnabled) return;
+  const targetVol = VOL.music * 0.8;
+  // Don't reset volume if already playing near target — just resume
+  if (!musicAudio.paused && musicAudio.volume >= targetVol * 0.8) return;
+  const playPromise = musicAudio.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      // Fade up from current volume to targetVol
+      const fi = setInterval(() => {
+        if (!musicAudio) { clearInterval(fi); return; }
+        const cur = musicAudio.volume;
+        if (cur < targetVol - 0.02) {
+          musicAudio.volume = Math.min(cur + 0.03, targetVol);
+        } else {
+          musicAudio.volume = targetVol;
+          clearInterval(fi);
+        }
+      }, 80);
+    }).catch(() => {});
+  }
+}
+
+function pauseMusicIfLoaded() {
+  if (!musicAudio) return;
+  const a = musicAudio;
+  let v = a.volume;
+  const fo = setInterval(() => {
+    v = Math.max(v - 0.05, 0);
+    a.volume = v;
+    if (v <= 0) { clearInterval(fo); a.pause(); }
+  }, 60);
+}
+
+function stopMusicIfLoaded() {
+  if (!musicAudio) return;
+  musicAudio.pause();
+  musicAudio.currentTime = 0;
+  musicAudio.volume = 0;
+}
+
+// ══════════════════════════════════════════
+//  CLOCK
+// ══════════════════════════════════════════
+setInterval(() => {
+  const n = new Date();
+  document.getElementById('clk').textContent =
+    [n.getHours(), n.getMinutes(), n.getSeconds()].map(x => String(x).padStart(2,'0')).join(':');
+}, 1000);
+
+// ══════════════════════════════════════════
+//  CANVAS — two independent systems:
+//  1. PAC-MAN timer (starts at set time, eats CCW to zero)
+//  2. RADAR sweep (synced to sonar ping — one lap per ping)
+// ══════════════════════════════════════════
+const canvas = document.getElementById('radarCanvas');
+const ctx2 = canvas.getContext('2d');
+const CX = 110, CY = 110, R = 100;
+
+let totalSec = 25 * 60, rem = totalSec, tiv = null, running = false;
+
+// ── Timer color based on remaining minutes ──
+function getTimerColor() {
+  if (!activeTimerTask) return '#e63946'; // red — no task selected
+  const m = rem / 60;
+  if (!running && rem === totalSec) return '#1a8fe3'; // blue — task loaded, ready
+  if (m > 30) return '#2dc653';
+  if (m > 15) return '#fcbf49';
+  if (m > 5)  return '#f77f00';
+  return '#e63946';
+}
+
+// Convert minutes to angle on the clock face
+// 0 min = 12 o'clock (-PI/2), clockwise positive
+// So minute m → angle = -PI/2 + (m/60)*2PI
+function minToAngle(m) {
+  return -Math.PI / 2 + (m / 60) * Math.PI * 2;
+}
+
+// ── Radar sweep — synced to sonar ──
+// One full lap per sonar interval (SONAR_INTERVAL ms)
+// Pointer is at 12 o'clock (0 mark) at the moment of each ping
+const SONAR_INTERVAL = 5000; // ms — must match startSonarInterval
+let radarAngle = -Math.PI / 2;
+let radarRafId = null;
+let radarStartTime = null; // timestamp of last ping
+
+function startRadarAnim() {
+  if (radarRafId) return;
+  radarStartTime = performance.now();
+  function loop(ts) {
+    if (!sonarOn || !running) { radarRafId = null; return; }
+    // fraction through current lap
+    const elapsed = (ts - radarStartTime) % SONAR_INTERVAL;
+    const frac = elapsed / SONAR_INTERVAL;
+    radarAngle = -Math.PI / 2 + frac * Math.PI * 2; // CW from 12 o'clock
+    drawAll();
+    radarRafId = requestAnimationFrame(loop);
+  }
+  radarRafId = requestAnimationFrame(loop);
+}
+
+function stopRadarAnim() {
+  if (radarRafId) { cancelAnimationFrame(radarRafId); radarRafId = null; }
+  radarStartTime = null;
+}
+
+// Called by sonar ping — reset radar to 12 o'clock at ping moment
+function syncRadarToSonar() {
+  radarStartTime = performance.now();
+}
+
+// ── Draw everything ──
+function drawAll() {
+  ctx2.clearRect(0, 0, 220, 220);
+
+  // Background
+  ctx2.beginPath();
+  ctx2.arc(CX, CY, R, 0, Math.PI * 2);
+  ctx2.fillStyle = '#07090c';
+  ctx2.fill();
+
+  // Concentric rings
+  [0.33, 0.66, 1].forEach(f => {
+    ctx2.beginPath();
+    ctx2.arc(CX, CY, R * f, 0, Math.PI * 2);
+    ctx2.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx2.lineWidth = 1; ctx2.stroke();
+  });
+
+  // Cross hairs
+  ctx2.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx2.lineWidth = 1;
+  [[CX-R,CY,CX+R,CY],[CX,CY-R,CX,CY+R]].forEach(([x1,y1,x2,y2]) => {
+    ctx2.beginPath(); ctx2.moveTo(x1,y1); ctx2.lineTo(x2,y2); ctx2.stroke();
+  });
+
+  // Tick marks (60 ticks = clock face, 12 o'clock = 0/60)
+  for (let i = 0; i < 60; i++) {
+    const a = minToAngle(i);
+    const maj = i % 5 === 0;
+    const r1 = maj ? R-10 : R-5;
+    ctx2.beginPath();
+    ctx2.moveTo(CX + r1*Math.cos(a), CY + r1*Math.sin(a));
+    ctx2.lineTo(CX + R*Math.cos(a),  CY + R*Math.sin(a));
+    ctx2.strokeStyle = maj ? 'rgba(247,127,0,0.6)' : 'rgba(255,255,255,0.12)';
+    ctx2.lineWidth = maj ? 2 : 1;
+    ctx2.stroke();
+    if (maj) {
+      const nr = R - 19;
+      ctx2.fillStyle = 'rgba(247,127,0,0.5)';
+      ctx2.font = '7px "Share Tech Mono",monospace';
+      ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+      ctx2.fillText(i === 0 ? '60' : String(i), CX+nr*Math.cos(a), CY+nr*Math.sin(a));
+    }
+  }
+
+  // ── PAC-MAN TIMER ──
+  // Full circle filled in col color when idle (showing set time)
+  // When running: pie from 12-o'clock to setTime mark is "eaten away",
+  // remainder (from rem mark CCW back to 12) stays filled
+  //
+  // Visually: start angle = 12 o'clock (top)
+  //           end angle   = angle of remaining minutes
+  // The filled wedge goes CW from 12 to rem-mark (that's the remaining time)
+  // The eaten part goes from rem-mark to 12 (CCW = the elapsed time)
+  const col = getTimerColor();
+  const remMins = rem / 60;
+  const setMins = totalSec / 60;
+
+  // Use remMins always (shows fill animation and current time correctly)
+  // When idle with no objective, show full circle at set time
+  const fillMins = (running || rem < totalSec) ? remMins : setMins;
+  const fillAngle = minToAngle(fillMins);
+
+  if (fillMins > 0) {
+    // Draw filled pie from 12 o'clock CW to fillAngle
+    // This is the Pac-Man body = remaining time
+    ctx2.beginPath();
+    ctx2.moveTo(CX, CY);
+    ctx2.arc(CX, CY, R - 3, -Math.PI/2, fillAngle, false); // CW
+    ctx2.closePath();
+    ctx2.fillStyle = col + '30';
+    ctx2.fill();
+
+    // Bright arc border along the outer edge of remaining portion
+    ctx2.beginPath();
+    ctx2.arc(CX, CY, R - 3, -Math.PI/2, fillAngle, false);
+    ctx2.strokeStyle = col;
+    ctx2.lineWidth = 3;
+    ctx2.shadowColor = col;
+    ctx2.shadowBlur = 8;
+    ctx2.stroke();
+    ctx2.shadowBlur = 0;
+
+    // Line from center to 12 o'clock (start edge)
+    ctx2.beginPath();
+    ctx2.moveTo(CX, CY);
+    ctx2.lineTo(CX, CY - (R-3));
+    ctx2.strokeStyle = col;
+    ctx2.lineWidth = 1.5;
+    ctx2.stroke();
+
+    // Line from center to rem mark (the "mouth" leading edge)
+    ctx2.beginPath();
+    ctx2.moveTo(CX, CY);
+    ctx2.lineTo(CX + (R-3)*Math.cos(fillAngle), CY + (R-3)*Math.sin(fillAngle));
+    ctx2.strokeStyle = col;
+    ctx2.lineWidth = 1.5;
+    ctx2.stroke();
+  }
+
+  // ── RADAR SWEEP ──
+  if (sonarOn && running) {
+    const TRAIL = Math.PI * 2 / 3; // 120° trail
+    // Radar color matches pac-man timer color
+    const rc = col;
+    // Parse to rgb for alpha trails
+    const tmp = document.createElement('canvas').getContext('2d');
+    tmp.fillStyle = rc; tmp.fillRect(0,0,1,1);
+    const [rr,rg,rb] = tmp.getImageData(0,0,1,1).data;
+    for (let i = 0; i < 40; i++) {
+      const frac = i / 40;
+      const a1 = radarAngle - TRAIL * (1 - frac);
+      const a2 = radarAngle - TRAIL * (1 - (i+1)/40);
+      ctx2.beginPath();
+      ctx2.moveTo(CX, CY);
+      ctx2.arc(CX, CY, R - 4, a1, a2);
+      ctx2.closePath();
+      ctx2.fillStyle = `rgba(${rr},${rg},${rb},${frac * 0.38})`;
+      ctx2.fill();
+    }
+    // Sweep line
+    ctx2.beginPath();
+    ctx2.moveTo(CX, CY);
+    ctx2.lineTo(CX + (R-4)*Math.cos(radarAngle), CY + (R-4)*Math.sin(radarAngle));
+    ctx2.strokeStyle = rc;
+    ctx2.lineWidth = 2;
+    ctx2.shadowColor = rc;
+    ctx2.shadowBlur = 8;
+    ctx2.stroke();
+    ctx2.shadowBlur = 0;
+  }
+
+  // Center dark circle
+  ctx2.beginPath();
+  ctx2.arc(CX, CY, 46, 0, Math.PI * 2);
+  ctx2.fillStyle = 'rgba(7,9,12,0.92)';
+  ctx2.fill();
+
+  // Outer border
+  ctx2.beginPath();
+  ctx2.arc(CX, CY, R, 0, Math.PI * 2);
+  ctx2.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx2.lineWidth = 1.5; ctx2.stroke();
+}
+
+// ── Drag to set time (only when stopped) ──
+let isDragging = false;
+function getAngle(e) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+  const ex = ((e.touches?e.touches[0].clientX:e.clientX)-rect.left)*sx;
+  const ey = ((e.touches?e.touches[0].clientY:e.clientY)-rect.top)*sy;
+  return Math.atan2(ey-CY, ex-CX);
+}
+function angleToMins(angle) {
+  let a = angle + Math.PI/2;
+  if (a < 0) a += Math.PI*2;
+  if (a >= Math.PI*2) a -= Math.PI*2;
+  const m = Math.round((a/(Math.PI*2))*60);
+  return Math.max(1, Math.min(60, m===0?60:m));
+}
+// Timer is "locked" when running OR when paused mid-session
+function timerLocked() { return running || (rem > 0 && rem < totalSec); }
+
+canvas.addEventListener('mousedown',  () => { if(!timerLocked()){ isDragging=true; startLockSound(); } });
+canvas.addEventListener('touchstart', e => {
+  if(!timerLocked()){ isDragging=true; startLockSound(); e.stopPropagation(); e.preventDefault(); }
+  else { e.stopPropagation(); } // still stop propagation to avoid swipe triggers
+},{passive:false});
+canvas.addEventListener('mousemove',  e => { if(!isDragging||timerLocked())return; applyDrag(e); });
+canvas.addEventListener('touchmove',  e => {
+  if(!isDragging||timerLocked())return;
+  const rect = canvas.getBoundingClientRect();
+  const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
+  if(tx < rect.left || tx > rect.right || ty < rect.top || ty > rect.bottom){
+    isDragging=false; stopLockSound(); return;
+  }
+  e.stopPropagation(); e.preventDefault(); applyDrag(e);
+},{passive:false});
+canvas.addEventListener('mouseup',    ()=>{ isDragging=false; stopLockSound(); });
+canvas.addEventListener('mouseleave', ()=>{ isDragging=false; stopLockSound(); });
+canvas.addEventListener('touchend',   ()=>{ isDragging=false; stopLockSound(); });
+canvas.addEventListener('touchcancel',()=>{ isDragging=false; stopLockSound(); });
+function applyDrag(e) {
+  const angle = getAngle(e);
+  checkLockTick(angle);
+  const m = angleToMins(angle);
+  totalSec=m*60; rem=totalSec;
+  document.querySelectorAll('.p-btn').forEach(b=>b.classList.remove('on'));
+  updDisp(); drawAll();
+}
+
+// ── Preset buttons ──
+function setPreset(m, btn) {
+  if (timerLocked()) return; // locked when running or paused mid-session
+  playUiClick();
+  document.querySelectorAll('.p-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  totalSec=m*60; rem=totalSec; updDisp(); drawAll();
+}
+function setCustom(v) {
+  if (running) return;
+  const m=Math.max(1,Math.min(60,parseInt(v)||1));
+  document.querySelectorAll('.p-btn').forEach(b=>b.classList.remove('on'));
+  totalSec=m*60; rem=totalSec; updDisp(); drawAll();
+}
+
+
+// ── Custom Timer Focus Overlay ──
+let wakeLock = null;
+let timerFocusActive = false;
+let ovCanvas = null, ovCtx = null;
+let ovAnimId = null;
+let lastTapTime = 0;
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      // Re-acquire if released (e.g. tab hidden then shown again)
+      wakeLock.addEventListener('release', () => {
+        if (timerFocusActive) requestWakeLock();
+      });
+    }
+  } catch(e) {}
+}
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+}
+
+function enterTimerFullscreen() {
+  if (timerFocusActive) return;
+  timerFocusActive = true;
+  const ov = document.getElementById('timerOverlay');
+  ov.style.display = 'flex';
+  requestWakeLock();
+
+  // Size the overlay canvas to fill the screen (square, as large as fits)
+  ovCanvas = document.getElementById('ovCanvas');
+  ovCtx = ovCanvas.getContext('2d');
+  const size = Math.min(window.innerWidth, window.innerHeight) * 0.82;
+  ovCanvas.width = size; ovCanvas.height = size;
+  ovCanvas.style.width = size+'px'; ovCanvas.style.height = size+'px';
+
+  // Tap to exit / double-tap to dismiss then re-enter
+  ovCanvas.ontouchend = ovCanvas.onclick = (e) => {
+    e.stopPropagation();
+    const now = Date.now();
+    if (now - lastTapTime < 380) {
+      // double tap — if exited, re-enter
+    } else {
+      exitTimerFullscreen();
+    }
+    lastTapTime = now;
+  };
+
+  drawOverlay();
+}
+
+function exitTimerFullscreen() {
+  if (!timerFocusActive) return;
+  timerFocusActive = false;
+  document.getElementById('timerOverlay').style.display = 'none';
+  if (ovAnimId) { cancelAnimationFrame(ovAnimId); ovAnimId = null; }
+  releaseWakeLock();
+}
+
+function drawOverlay() {
+  if (!timerFocusActive || !ovCanvas) return;
+
+  const size = ovCanvas.width;
+  const cx = size/2, cy = size/2, r = size/2 - size*0.04;
+  const col = getTimerColor();
+
+  // Sync objective name color
+  const ovObj = document.getElementById('ovObjective');
+  if (ovObj) {
+    ovObj.textContent = activeTimerTask ? activeTimerTask.name : '';
+    ovObj.style.color = col;
+  }
+  // Sync time display
+  const m = Math.floor(rem/60), s = rem%60;
+  const dispStr = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  const ovD = document.getElementById('ovDisp');
+  if (ovD) { ovD.textContent = dispStr; ovD.style.color = col; }
+  const ovL = document.getElementById('ovLbl');
+  if (ovL) { ovL.textContent = running ? 'EXECUTING' : 'HOLDING'; ovL.style.color = col; }
+
+  const c = ovCtx;
+  c.clearRect(0, 0, size, size);
+
+  // Background circle
+  c.beginPath(); c.arc(cx, cy, r, 0, Math.PI*2);
+  c.fillStyle = '#07090c'; c.fill();
+
+  // Concentric rings
+  [0.33, 0.66, 1].forEach(f => {
+    c.beginPath(); c.arc(cx, cy, r*f, 0, Math.PI*2);
+    c.strokeStyle = 'rgba(255,255,255,0.06)'; c.lineWidth = 1; c.stroke();
+  });
+
+  // Pac-Man fill arc
+  const remMins = rem/60, setMins = totalSec/60;
+  const fillMins = (running || rem < totalSec) ? remMins : setMins;
+  if (fillMins > 0) {
+    const fillAngle = -Math.PI/2 + (fillMins/60)*Math.PI*2;
+    c.beginPath(); c.moveTo(cx,cy);
+    c.arc(cx, cy, r-size*0.015, -Math.PI/2, fillAngle, false);
+    c.closePath(); c.fillStyle = col+'28'; c.fill();
+    c.beginPath(); c.arc(cx, cy, r-size*0.015, -Math.PI/2, fillAngle, false);
+    c.strokeStyle = col; c.lineWidth = size*0.018;
+    c.shadowColor = col; c.shadowBlur = size*0.04; c.stroke(); c.shadowBlur = 0;
+    // Leading edge line
+    c.beginPath(); c.moveTo(cx,cy);
+    c.lineTo(cx+(r-size*0.015)*Math.cos(fillAngle), cy+(r-size*0.015)*Math.sin(fillAngle));
+    c.strokeStyle = col; c.lineWidth = size*0.006; c.stroke();
+    // 12 o'clock line
+    c.beginPath(); c.moveTo(cx,cy); c.lineTo(cx, cy-(r-size*0.015));
+    c.strokeStyle = col; c.lineWidth = size*0.006; c.stroke();
+  }
+
+  // Outer ring
+  c.beginPath(); c.arc(cx, cy, r, 0, Math.PI*2);
+  c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1.5; c.stroke();
+
+  // ── Radar sweep (same as main canvas) ──
+  if (sonarOn && running) {
+    const TRAIL = Math.PI * 2 / 3;
+    // Parse col to rgb for alpha trails
+    const tmp2 = document.createElement('canvas').getContext('2d');
+    tmp2.fillStyle = col; tmp2.fillRect(0,0,1,1);
+    const [rr,rg,rb] = tmp2.getImageData(0,0,1,1).data;
+    const sr = r - size * 0.02; // sweep radius
+    for (let i = 0; i < 40; i++) {
+      const frac = i / 40;
+      const a1 = radarAngle - TRAIL * (1 - frac);
+      const a2 = radarAngle - TRAIL * (1 - (i+1)/40);
+      c.beginPath(); c.moveTo(cx, cy);
+      c.arc(cx, cy, sr, a1, a2);
+      c.closePath();
+      c.fillStyle = `rgba(${rr},${rg},${rb},${frac * 0.38})`;
+      c.fill();
+    }
+    // Sweep pointer line
+    c.beginPath(); c.moveTo(cx, cy);
+    c.lineTo(cx + sr*Math.cos(radarAngle), cy + sr*Math.sin(radarAngle));
+    c.strokeStyle = col; c.lineWidth = size * 0.008;
+    c.shadowColor = col; c.shadowBlur = size * 0.04; c.stroke(); c.shadowBlur = 0;
+  }
+
+  // Keep animating
+  ovAnimId = requestAnimationFrame(drawOverlay);
+}
+
+// Also re-enter if user double-taps the main canvas while running
+canvas.addEventListener('click', (e) => {
+  if (!running) return;
+  const now = Date.now();
+  if (now - lastTapTime < 380) {
+    enterTimerFullscreen(); // double-tap main canvas → re-enter
+  }
+  lastTapTime = now;
+});
+
+function startTimer() {
+  if (!activeTimerTask) { showToast('SELECT AN OBJECTIVE FIRST', 'warn'); return; }
+  if (running) return;
+  if (rem <= 0) { totalSec = 60*60; rem = totalSec; }
+  running = true;
+  document.getElementById('btnGo').style.display = 'none';
+  document.getElementById('btnHld').style.display = '';
+  document.getElementById('tLbl').textContent = 'EXECUTING';
+  
+  playUiClick();
+  playAlert('start');
+  if (sonarOn) { startSonarInterval(); startRadarAnim(); }
+  startMusicIfLoaded();
+  tiv = setInterval(tick, 1000);
+  // Enter fullscreen + wake lock after 3 seconds
+  setTimeout(() => { if (running) enterTimerFullscreen(); }, 3000);
+}
+function pauseTimer() {
+  running = false; clearInterval(tiv); stopRadarAnim();
+  document.getElementById('btnGo').style.display = '';
+  document.getElementById('btnHld').style.display = 'none';
+  document.getElementById('tLbl').textContent = 'HOLDING';
+  stopSonarInterval(); playUiClick(); playAlert('pause'); pauseMusicIfLoaded();
+  exitTimerFullscreen();
+  drawAll(); showToast('MISSION PAUSED', 'warn');
+}
+function resetTimer() {
+  running = false; clearInterval(tiv); stopRadarAnim();
+  stopSonarInterval(); stopMusicIfLoaded();
+  exitTimerFullscreen();
+  activeTimerTask = null;
+  document.getElementById('timerTaskName').textContent = '—';
+  document.getElementById('btnGo').style.display = '';
+  document.getElementById('btnHld').style.display = 'none';
+  document.getElementById('tLbl').textContent = 'STANDBY';
+  totalSec = 60*60; rem = totalSec;
+  // reset preset buttons to 60
+  document.querySelectorAll('.p-btn').forEach(b=>b.classList.remove('on'));
+  const btns = document.querySelectorAll('.p-btn');
+  if (btns[3]) btns[3].classList.add('on');
+  playUiClick();
+  updateTimerTaskUI();
+  renderTasks();
+  updDisp(); drawAll();
+}
+function tick() {
+  rem--;
+  updDisp(); drawAll();
+  // Alerts at exact minute marks
+  if (rem === 30*60) { playAlert('warning'); showToast('30 MINUTES REMAINING', 'warn'); }
+  if (rem === 15*60) { playAlert('warning'); showToast('15 MINUTES REMAINING', 'warn'); }
+  if (rem ===  5*60) { playAlert('warning'); showToast('5 MINUTES REMAINING',  'warn'); }
+  if (rem ===  1*60) { playAlert('warning'); showToast('1 MINUTE REMAINING',   'warn'); }
+  // Countdown beeps: last 10 seconds
+  if (rem > 0 && rem <= 10) { playCountdownBeep(rem); }
+  if (rem <= 0) {
+    running=false; clearInterval(tiv); stopRadarAnim();
+    stopSonarInterval(); stopMusicIfLoaded();
+    exitTimerFullscreen();
+    document.getElementById('btnGo').style.display='';
+    document.getElementById('btnHld').style.display='none';
+    document.getElementById('tLbl').textContent='COMPLETE';
+    const col = getTimerColor();
+    document.getElementById('tLbl').style.color = col;
+    playAlert('complete'); drawAll();
+    const minsDone = Math.round(totalSec / 60);
+    recordSession(minsDone);
+    // Mark the calEntry as done (not the task itself — task can repeat)
+    if (activeTimerTask) {
+      const c = calTasks.find(x => x.id === activeTimerTask.calId);
+      if (c) {
+        const todayStr = toDateStr(new Date());
+        if (c.recur === 'once') {
+          c.done = true;
+        } else {
+          if (!c.doneDates) c.doneDates = {};
+          c.doneDates[todayStr] = true; // only marks TODAY as done
+        }
+        saveCalTasks();
+      }
+    }
+    // Clear timer after 3s
+    setTimeout(() => {
+      activeTimerTask = null;
+      document.getElementById('timerTaskName').textContent = '—';
+      document.getElementById('tLbl').textContent = 'STANDBY';
+      totalSec = 60*60; rem = totalSec;
+      document.querySelectorAll('.p-btn').forEach(b=>b.classList.remove('on'));
+      const btns = document.querySelectorAll('.p-btn');
+      if (btns[3]) btns[3].classList.add('on');
+      updateTimerTaskUI();
+      renderTasks(); renderDrawer(); renderCal();
+      updDisp(); drawAll();
+    }, 3000);
+    showToast('MISSION COMPLETE — OUTSTANDING');
+  }
+}
+function updDisp() {
+  const m=Math.floor(rem/60),s=rem%60;
+  document.getElementById('tDisp').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  // Sync colors only — tLbl text is owned by each timer function
+  const col = getTimerColor();
+  const nameEl = document.getElementById('timerTaskName');
+  if (nameEl) nameEl.style.color = col;
+  const dot = document.querySelector('#timerHasTask div');
+  if (dot) { dot.style.background = col; dot.style.boxShadow = `0 0 6px ${col}`; }
+  const lbl = document.getElementById('tLbl');
+  if (lbl) lbl.style.color = col;
+}
+
+// ══════════════════════════════════════════
+//  URGENCY LEVELS & SWATCHES
+// ══════════════════════════════════════════
+const COLS = [
+  { v:'#e63946', n:'CRITICAL',  lv:1, label:'LV1 — CRITICAL'  },
+  { v:'#f77f00', n:'HIGH',      lv:2, label:'LV2 — HIGH'      },
+  { v:'#fcbf49', n:'MEDIUM',    lv:3, label:'LV3 — MEDIUM'    },
+  { v:'#2dc653', n:'LOW',       lv:4, label:'LV4 — LOW'       },
+  { v:'#1a8fe3', n:'ROUTINE',   lv:5, label:'LV5 — ROUTINE'   },
+];
+let selCol = COLS[0].v;
+const swWrap = document.querySelector('.swatches');
+COLS.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'sw' + (c.v === selCol ? ' sel' : '');
+  d.style.background = c.v;
+  d.title = c.label;
+  d.onclick = () => {
+    selCol = c.v;
+    document.querySelectorAll('.sw').forEach(x => x.classList.remove('sel'));
+    d.classList.add('sel');
+  };
+  swWrap.appendChild(d);
+});
+
+// ══════════════════════════════════════════
+//  TASKS + localStorage persistence
+// ══════════════════════════════════════════
+function saveTasks() {
+  try { localStorage.setItem('focusops_tasks', JSON.stringify(tasks)); } catch(e) {}
+}
+function loadTasks() {
+  try { const d = localStorage.getItem('focusops_tasks'); return d ? JSON.parse(d) : []; } catch(e) { return []; }
+}
+
+let tasks = loadTasks();
+
+function addTask() {
+  const inp = document.getElementById('tInp'), txt = inp.value.trim();
+  if (!txt) return;
+  // If in a specific level tab, use that level's color; otherwise use selCol
+  let col;
+  if (activeTab > 0) {
+    col = COLS[activeTab - 1];
+  } else {
+    col = COLS.find(c => c.v === selCol) || COLS[0];
+  }
+  tasks.push({ id: Date.now(), text: txt, color: col.v, level: col.lv, name: col.n, done: false });
+  inp.value = '';
+  saveTasks();
+  renderTasks();
+  renderDrawer();
+}
+
+// Get today's scheduled calTask entries
+function getTodayCalTasks() {
+  const todayStr = toDateStr(new Date());
+  const scheduled = calTasks.filter(c => getOccurrences(c, [todayStr]).length > 0);
+  // LV1 critical tasks always appear — add virtual entries for any not already scheduled
+  const lv1Tasks = tasks.filter(t => t.level === 1);
+  const extras = [];
+  lv1Tasks.forEach(task => {
+    if (!scheduled.some(c => c.taskId === task.id)) {
+      extras.push({ id: 'lv1_'+task.id, taskId: task.id, name: task.text,
+        color: task.color, date: todayStr, time: '', dur: 45,
+        recur: 'daily', sessions: [], done: false, _virtual: true });
+    }
+  });
+  return [...extras, ...scheduled];
+}
+
+// Check if a calEntry is done for a specific display date
+function isCalEntryDone(c, dateStr) {
+  if (c.recur === 'once') return !!c.done;
+  // For recurring: done only for the specific date it was completed
+  return !!(c.doneDates && c.doneDates[dateStr]);
+}
+
+// Keep backward compat for daily list (uses today)
+function isCalEntryDoneToday(c) {
+  return isCalEntryDone(c, toDateStr(new Date()));
+}
+
+function renderTasks() {
+  const l = document.getElementById('tList');
+  const todayCal = getTodayCalTasks();
+  if (!todayCal.length) {
+    l.innerHTML = '<div class="empty">// NO OBJECTIVES SCHEDULED TODAY //</div>';
+    updProg(); return;
+  }
+  const sorted = [...todayCal].sort((a,b) => {
+    const aDone = isCalEntryDoneToday(a), bDone = isCalEntryDoneToday(b);
+    if (aDone !== bDone) return aDone ? 1 : -1;
+    const ta = tasks.find(t=>t.id===a.taskId), tb = tasks.find(t=>t.id===b.taskId);
+    return (ta?.level||5) - (tb?.level||5);
+  });
+  l.innerHTML = sorted.map(c => {
+    const task = tasks.find(t => t.id === c.taskId);
+    const done = isCalEntryDoneToday(c);
+    const col = task ? task.color : 'var(--blue)';
+    const lv  = task ? task.level : 5;
+    const isActive = activeTimerTask && String(activeTimerTask.calId) === String(c.id);
+    const isLv1 = lv === 1;
+    const urgentBadge = isLv1 ? `<span style="font-family:'Share Tech Mono',monospace;font-size:0.42rem;letter-spacing:1px;color:var(--red);background:rgba(230,57,70,0.12);padding:2px 5px;border:1px solid rgba(230,57,70,0.3);flex-shrink:0">URGENT</span>` : '';
+    const runFn = c._virtual ? `runLv1Task(${c.taskId})` : `setActiveTimerTask(${JSON.stringify(c.id)})`;
+    const runBtn = !done ? `<button class="t-run-btn${isActive?' active':''}" onclick="${runFn}" title="Run timer">▶</button>` : '';
+    return `
+    <div class="task-item ${done?'done':''}" style="border-left-color:${col}">
+      <div class="chk ${done?'on':''}" onclick="togCalTask(${JSON.stringify(c.id)})">${done?'✓':''}</div>
+      <span class="t-txt">${esc(c.name)}</span>
+      ${c.time?`<span style="font-family:'Share Tech Mono',monospace;font-size:0.48rem;color:var(--muted);flex-shrink:0">${c.time}</span>`:''}
+      ${urgentBadge}
+      ${runBtn}
+      <div class="t-priority" style="cursor:default;flex-shrink:0">
+        <div class="t-prio-dot" style="background:${col}"></div>
+        <span class="t-prio-lbl" style="color:${col}">LV${lv}</span>
+      </div>
+    </div>`;
+  }).join('');
+  updProg();
+}
+
+function togCalTask(calId) {
+  const todayStr = toDateStr(new Date());
+  // Virtual LV1
+  if (String(calId).startsWith('lv1_')) {
+    if (!window._lv1Done) window._lv1Done = {};
+    window._lv1Done[todayStr+'_'+calId] = !window._lv1Done[todayStr+'_'+calId];
+    renderTasks(); updProg(); return;
+  }
+  togCalTaskDate(calId, todayStr);
+}
+
+function runLv1Task(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  const c = { id: Date.now(), taskId, name: task.text, color: task.color,
+    date: toDateStr(new Date()), time: '', dur: 45, recur: 'once', sessions: [], done: false };
+  calTasks.push(c); saveCalTasks();
+  loadObjectiveToTimer(c, 45);
+}
+
+function updProg() {
+  const todayCal = getTodayCalTasks();
+  const tot = todayCal.length;
+  const done = todayCal.filter(c => isCalEntryDoneToday(c)).length;
+  const p = tot ? Math.round(done/tot*100) : 0;
+  const col = p===100?'#1a8fe3':p>=66?'#2dc653':p>=33?'#fcbf49':'#e63946';
+  const fill = document.getElementById('pFill');
+  if (fill) { fill.style.width=p+'%'; fill.style.background=col; }
+  document.getElementById('pTxt').textContent = done+'/'+tot;
+  const badge = document.getElementById('catBadge');
+  if (badge) badge.textContent = tasks.length;
+}
+
+function changePriority(id, el) {
+  // Close any existing picker
+  closePrioPicker();
+
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+
+  // Overlay to catch outside clicks
+  const overlay = document.createElement('div');
+  overlay.className = 'prio-picker-overlay';
+  overlay.onclick = closePrioPicker;
+  document.body.appendChild(overlay);
+
+  // Picker popup
+  const picker = document.createElement('div');
+  picker.className = 'prio-picker';
+  picker.id = 'prioPicker';
+
+  COLS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'prio-picker-item' + (t.level === c.lv ? ' current' : '');
+    btn.innerHTML = `<div class="prio-picker-swatch" style="background:${c.v}"></div>${c.label}`;
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      t.level = c.lv; t.color = c.v; t.name = c.n;
+      saveTasks(); renderTasks(); renderDrawer();
+      closePrioPicker();
+    };
+    picker.appendChild(btn);
+  });
+
+  document.body.appendChild(picker);
+
+  // Position near the clicked element
+  const rect = el.getBoundingClientRect();
+  const pw = 160, ph = 180;
+  let top = rect.bottom + 4;
+  let left = rect.left;
+  if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+  if (top + ph > window.innerHeight - 8) top = rect.top - ph - 4;
+  picker.style.top = top + 'px';
+  picker.style.left = left + 'px';
+}
+
+function closePrioPicker() {
+  const p = document.getElementById('prioPicker');
+  if (p) p.remove();
+  document.querySelectorAll('.prio-picker-overlay').forEach(o => o.remove());
+}
+
+function tog(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  t.done = !t.done;
+  saveTasks(); renderTasks(); renderDrawer();
+  if (t.done) { playAlert('task'); showToast('OBJECTIVE CLEARED'); }
+}
+
+function del(id) {
+  tasks = tasks.filter(x => x.id !== id);
+  saveTasks(); renderTasks(); renderDrawer();
+}
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ══════════════════════════════════════════
+//  CATEGORY DRAWER
+// ══════════════════════════════════════════
+let activeTab = 0; // 0 = ALL, 1-5 = level
+
+function setTab(idx) {
+  activeTab = idx;
+  // Sync selCol and swatch highlight to match tab
+  if (idx > 0) {
+    const c = COLS[idx - 1];
+    selCol = c.v;
+    document.querySelectorAll('.sw').forEach(s => s.classList.remove('sel'));
+    const swatches = document.querySelectorAll('.sw');
+    if (swatches[idx - 1]) swatches[idx - 1].classList.add('sel');
+    // Hide swatches when level is pre-selected
+    const swWrapEl = document.querySelector('.swatches');
+    if (swWrapEl) swWrapEl.style.opacity = '0.4';
+  } else {
+    // ALL tab — show swatches normally
+    const swWrapEl = document.querySelector('.swatches');
+    if (swWrapEl) swWrapEl.style.opacity = '1';
+  }
+  renderDrawer();
+}
+
+function renderDrawer() {
+  const tabsEl = document.getElementById('catTabs');
+  const contentEl = document.getElementById('catContent');
+
+  // ── Build tabs ──
+  let tabsHtml = `
+    <button class="cat-tab ${activeTab===0?'active':''}" onclick="setTab(0)" style="${activeTab===0?'border-bottom-color:var(--orange)':''}">
+      <div class="tab-dot" style="background:var(--orange)"></div>
+      ALL
+      <div class="tab-count">${tasks.length}</div>
+    </button>`;
+  COLS.forEach((c, i) => {
+    const idx = i + 1;
+    const cnt = tasks.filter(t => t.level === c.lv).length;
+    tabsHtml += `
+      <button class="cat-tab ${activeTab===idx?'active':''}" onclick="setTab(${idx})"
+        style="${activeTab===idx?`border-bottom-color:${c.v}`:''}">
+        <div class="tab-dot" style="background:${c.v}"></div>
+        ${c.n}
+        <div class="tab-count">${cnt}</div>
+      </button>`;
+  });
+  tabsEl.innerHTML = tabsHtml;
+
+  function taskRow(t) {
+    const isLv1 = t.level === 1;
+    const schedBtn = isLv1 ? '' : `<button class="t-sched-btn" onclick="openSchedDialog(${t.id})" title="Schedule">📅</button>`;
+    return `<div class="cat-task-item" style="border-left-color:${t.color}">
+      <span class="t-txt">${esc(t.text)}</span>
+      ${schedBtn}
+      <div class="t-priority" onclick="changePriority(${t.id},this)" title="Change priority">
+        <div class="t-prio-dot" style="background:${t.color}"></div>
+        <span class="t-prio-lbl" style="color:${t.color}">LV${t.level}</span>
+      </div>
+      <button class="t-del" onclick="del(${t.id});renderDrawer()">✕</button>
+    </div>`;
+  }
+
+  if (activeTab === 0) {
+    let html = '';
+    COLS.forEach(c => {
+      const group = tasks.filter(t => t.level === c.lv);
+      if (!group.length) return;
+      html += `<div class="cat-group">
+        <div class="cat-group-label">
+          <div class="cat-group-dot" style="background:${c.v}"></div>
+          ${c.label}
+          <span style="margin-left:auto">${group.length}</span>
+        </div>`;
+      group.forEach(t => { html += taskRow(t); });
+      html += '</div>';
+    });
+    if (!html) html = '<div class="cat-empty">// NO OBJECTIVES REGISTERED //</div>';
+    contentEl.innerHTML = html;
+  } else {
+    const c = COLS[activeTab - 1];
+    const group = tasks.filter(t => t.level === c.lv);
+    let html = `<div class="cat-section-header">
+      <div class="cat-color-bar" style="background:${c.v}"></div>
+      <div>
+        <div class="cat-section-title" style="color:${c.v}">${c.label}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:2px;margin-top:3px">${urgencyDesc(c.lv)}</div>
+      </div>
+      <div class="cat-section-sub">${group.length} OBJECTIVES</div>
+    </div>`;
+    if (!group.length) {
+      html += '<div class="cat-empty">// NO OBJECTIVES IN THIS LEVEL //</div>';
+    } else {
+      group.forEach(t => { html += taskRow(t); });
+    }
+    contentEl.innerHTML = html;
+  }
+}
+
+function urgencyDesc(lv) {
+  return ['','DO IT NOW — NO DELAY','IMPORTANT — ACT SOON','PLAN AND EXECUTE','CAN WAIT — DO WHEN ABLE','BACKLOG — LOW PRIORITY'][lv] || '';
+}
+
+// ══════════════════════════════════════════
+//  CALENDAR / SCHEDULE SYSTEM
+//  - Tasks are scheduled from the task list
+//  - Visual week view
+//  - Recurrence: once/daily/weekly/monthly
+//  - Sessions tracked with F-16 icons
+// ══════════════════════════════════════════
+function saveCalTasks() {
+  try { localStorage.setItem('focusops_cal', JSON.stringify(calTasks)); } catch(e) {}
+}
+function loadCalTasks() {
+  try { const d = localStorage.getItem('focusops_cal'); return d ? JSON.parse(d) : []; } catch(e) { return []; }
+}
+
+let calTasks = loadCalTasks();
+let activeTimerTask = null;
+let calView = 'week';
+let calOffset = 0;
+let schedTargetTaskId = null;
+let schedRecur = 'once';
+
+function sessionColor(mins) {
+  if (mins >= 45) return '#1a8fe3';
+  if (mins >= 16) return '#2dc653';
+  if (mins >=  6) return '#f77f00';
+  return '#e63946';
+}
+
+// F-16 icon: minimal delta-wing SVG pointing up
+function f16Icon(mins) {
+  const col = sessionColor(mins);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14" style="display:inline-block;vertical-align:middle;margin:0 1px" title="${mins}m">
+    <polygon points="5.5,0 10,12 7.5,10 5.5,14 3.5,10 1,12" fill="${col}"/>
+    <polygon points="5.5,1 9,11 5.5,13 2,11" fill="${col}" opacity="0.6"/>
+  </svg>`;
+}
+
+// ── Run timer from task list ──
+function runTimerForTask(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  // From urgency board: always 45min default
+  const DEFAULT_DUR = 45;
+  let calEntry = [...calTasks].filter(c => c.taskId === taskId).sort((a,b) => b.id-a.id)[0];
+  if (!calEntry) {
+    calEntry = { id: Date.now(), taskId, name: task.text, color: task.color,
+      date: new Date().toISOString().slice(0,10), time:'', dur: DEFAULT_DUR, recur:'once', sessions:[] };
+    calTasks.push(calEntry);
+    saveCalTasks();
+  }
+  loadObjectiveToTimer(calEntry, DEFAULT_DUR);
+}
+
+function goToTimer() {
+  document.getElementById('calDrawer').classList.remove('open');
+  document.getElementById('catDrawer').classList.remove('open');
+  // Scroll timer panel into view
+  setTimeout(() => {
+    const panel = document.querySelector('.timer-panel');
+    if (panel) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      panel.style.boxShadow = '0 0 24px rgba(45,198,83,0.6)';
+      setTimeout(() => { panel.style.boxShadow = ''; }, 1000);
+    }
+  }, 50);
+}
+
+// Shared function: load an objective into the timer and go there
+function loadObjectiveToTimer(calEntry, overrideMins) {
+  const c = calEntry;
+  const m = Math.min(60, overrideMins || c.dur || 45);
+  activeTimerTask = { calId: c.id, taskId: c.taskId, name: c.name, dur: m };
+  const target = m * 60;
+  totalSec = target; rem = 0; // totalSec fixed, rem animates 0→target
+  document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('timerTaskName').textContent = c.name;
+  document.getElementById('tLbl').textContent = 'READY';
+  updateTimerTaskUI();
+  renderTasks();
+  playUiClick();
+  // Fill animation sound — sweeps up over 600ms
+  playFillSound(30 * 20); // steps * stepMs
+  // Animate fill from 0 to target
+  let step = 0; const steps = 30;
+  const fa = setInterval(() => {
+    step++;
+    rem = Math.round((step/steps)*target);
+    if (step >= steps) { rem = target; updDisp(); drawAll(); clearInterval(fa); }
+    else { updDisp(); drawAll(); }
+  }, 20);
+  goToTimer();
+  showToast('OBJECTIVE LOADED — HIT EXECUTE');
+}
+
+function setActiveTimerTask(calId) {
+  const c = calTasks.find(x => x.id === calId);
+  if (!c) return;
+  // From schedule: use stored duration (or 45 default)
+  loadObjectiveToTimer(c, c.dur || 45);
+}
+
+function clearTimerTask() {
+  // If timer is running, stop it first
+  if (running) {
+    running = false; clearInterval(tiv); stopRadarAnim();
+    stopSonarInterval(); stopMusicIfLoaded();
+    document.getElementById('btnGo').style.display = '';
+    document.getElementById('btnHld').style.display = 'none';
+  }
+  activeTimerTask = null;
+  document.getElementById('timerTaskName').textContent = '—';
+  document.getElementById('tLbl').textContent = 'STANDBY';
+  totalSec = 60*60; rem = totalSec;
+  updateTimerTaskUI();
+  renderTasks();
+  updDisp(); drawAll();
+}
+
+function initApp() {
+  totalSec = 60*60; rem = totalSec;
+  updDisp();
+  drawAll(); renderTasks(); renderDrawer(); renderCal();
+  updateTimerTaskUI();
+}
+
+function updateTimerTaskUI() {
+  const hasTask = !!activeTimerTask;
+  document.getElementById('timerNoTask').style.display  = hasTask ? 'none' : 'flex';
+  document.getElementById('timerHasTask').style.display = hasTask ? 'flex' : 'none';
+  const btn = document.getElementById('btnGo');
+  // Only disable when truly no task — never when paused
+  btn.disabled = !hasTask;
+  btn.style.opacity = hasTask ? '1' : '0.35';
+  btn.style.cursor  = hasTask ? 'pointer' : 'not-allowed';
+  // Always ensure correct button visibility when not running
+  if (!running) {
+    btn.style.display = '';
+    document.getElementById('btnHld').style.display = 'none';
+  }
+  // Label
+  const lbl = document.getElementById('tLbl');
+  if (!running && !hasTask) lbl.textContent = 'STANDBY';
+  else if (!running && hasTask && rem === totalSec) lbl.textContent = 'READY';
+  // Don't touch label if paused or executing — those own their state
+}
+
+// ── Duration scroll/swipe in schedule dialog ──
+let schedDurVal = 0;
+let durTouchY = null, durMouseY = null;
+
+function adjDur(delta) {
+  schedDurVal = Math.max(0, Math.min(480, schedDurVal + delta));
+  // Snap to nearest 5
+  schedDurVal = Math.round(schedDurVal / 5) * 5;
+  document.getElementById('schedDurDisplay').textContent = schedDurVal;
+}
+function durTouchStart(e) { durTouchY = e.touches[0].clientY; }
+function durTouchMove(e) {
+  if (durTouchY === null) return;
+  const dy = durTouchY - e.touches[0].clientY;
+  if (Math.abs(dy) >= 8) { adjDur(dy > 0 ? 5 : -5); durTouchY = e.touches[0].clientY; }
+  e.preventDefault();
+}
+function durMouseStart(e) {
+  durMouseY = e.clientY;
+  const onMove = ev => { const dy=durMouseY-ev.clientY; if(Math.abs(dy)>=8){adjDur(dy>0?5:-5);durMouseY=ev.clientY;} };
+  const onUp = () => { document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); };
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+// Show existing tasks on the selected date
+function onSchedDateChange() {
+  const date = document.getElementById('schedDate').value;
+  const prev = document.getElementById('schedDatePreview');
+  if (!date) { prev.style.display='none'; return; }
+  const items = calTasks.filter(t => getOccurrences(t,[date]).length>0);
+  if (!items.length) { prev.style.display='none'; return; }
+  prev.style.display = 'block';
+  prev.innerHTML = 'ALREADY SCHEDULED:<br>' + items.map(t =>
+    `• ${t.time||'--:--'} ${esc(t.name)} (${t.dur}m)`
+  ).join('<br>');
+}
+
+// ══════════════════════════════════════════
+//  SWIPE GESTURES
+// ══════════════════════════════════════════
+
+// ── Main app: swipe RIGHT → calendar, swipe LEFT → urgency ──
+// Exclude canvas touches (used for timer drag)
+let mainSwipeX = null, mainSwipeY = null;
+document.querySelector('.app').addEventListener('touchstart', e => {
+  if (e.target === canvas) return; // ignore canvas
+  mainSwipeX = e.touches[0].clientX;
+  mainSwipeY = e.touches[0].clientY;
+}, {passive: true});
+
+document.querySelector('.app').addEventListener('touchend', e => {
+  if (mainSwipeX === null) return;
+  const dx = e.changedTouches[0].clientX - mainSwipeX;
+  const dy = e.changedTouches[0].clientY - mainSwipeY;
+  // Only fire if horizontal movement dominates (ratio 2:1) and big enough
+  if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 2) {
+    if (dx > 0) openCalDrawer();   // swipe RIGHT → schedule (slides in from left)
+    else        openDrawer();      // swipe LEFT  → urgency (slides in from right)
+  }
+  mainSwipeX = null; mainSwipeY = null;
+}, {passive: true});
+
+// ── Calendar drawer: swipe LEFT anywhere in drawer closes it ──
+let calSwipeX = null, calSwipeY = null;
+document.getElementById('calDrawer').addEventListener('touchstart', e => {
+  calSwipeX = e.touches[0].clientX;
+  calSwipeY = e.touches[0].clientY;
+}, {passive: true});
+document.getElementById('calDrawer').addEventListener('touchend', e => {
+  if (calSwipeX === null) return;
+  const dx = e.changedTouches[0].clientX - calSwipeX;
+  const dy = e.changedTouches[0].clientY - calSwipeY;
+  if (dx < -55 && Math.abs(dx) > Math.abs(dy) * 1.5) closeCalDrawer();
+  calSwipeX = null; calSwipeY = null;
+}, {passive: true});
+
+// ── Urgency drawer: swipe RIGHT anywhere in drawer closes it ──
+// But exclude the category tabs area (horizontal scroll there)
+let catSwipeX = null, catSwipeY = null, catSwipeTarget = null;
+document.getElementById('catDrawer').addEventListener('touchstart', e => {
+  catSwipeTarget = e.target;
+  catSwipeX = e.touches[0].clientX;
+  catSwipeY = e.touches[0].clientY;
+}, {passive: true});
+document.getElementById('catDrawer').addEventListener('touchend', e => {
+  if (catSwipeX === null) return;
+  const dx = e.changedTouches[0].clientX - catSwipeX;
+  const dy = e.changedTouches[0].clientY - catSwipeY;
+  // Don't trigger if swiping in tabs (horizontal scroll area)
+  const inTabs = catSwipeTarget && catSwipeTarget.closest('#catTabs');
+  if (!inTabs && dx > 55 && Math.abs(dx) > Math.abs(dy) * 1.5) closeDrawer();
+  catSwipeX = null; catSwipeY = null;
+}, {passive: true});
+
+function openSchedDialog(taskId) {
+  schedTargetTaskId = taskId;
+  schedRecur = 'once';
+  schedDurVal = 0;
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+  document.getElementById('schedTaskLabel').textContent = task.text;
+  document.getElementById('schedDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('schedTime').value = '';
+  document.getElementById('schedDurDisplay').textContent = '0';
+  document.getElementById('schedDatePreview').style.display = 'none';
+  document.querySelectorAll('.recur-btn').forEach(b => b.classList.toggle('active', b.dataset.r==='once'));
+  document.getElementById('schedDialog').style.display = 'flex';
+  onSchedDateChange();
+}
+function closeSchedDialog() {
+  document.getElementById('schedDialog').style.display = 'none';
+  schedTargetTaskId = null;
+}
+document.querySelectorAll('.recur-btn').forEach(b => {
+  b.onclick = () => { schedRecur = b.dataset.r; document.querySelectorAll('.recur-btn').forEach(x => x.classList.toggle('active', x===b)); };
+});
+function confirmSchedule() {
+  if (!schedTargetTaskId) return;
+  const task = tasks.find(t => t.id === schedTargetTaskId);
+  if (!task) return;
+  const date = document.getElementById('schedDate').value;
+  const time = document.getElementById('schedTime').value;
+  const dur  = schedDurVal > 0 ? schedDurVal : 45;
+  if (!date) { showToast('SELECT A DATE','warn'); return; }
+  calTasks.push({ id:Date.now(), taskId:schedTargetTaskId, name:task.text, color:task.color,
+    date, time, dur, recur:schedRecur, sessions:[], done:false });
+  saveCalTasks();
+  closeSchedDialog();
+  renderCal();
+  renderTasks(); // update daily list immediately
+  showToast('OBJECTIVE SCHEDULED');
+}
+function delCalEntry(id) {
+  calTasks = calTasks.filter(t => t.id !== id);
+  if (activeTimerTask && activeTimerTask.calId === id) clearTimerTask();
+  saveCalTasks(); renderCal(); renderTasks();
+}
+
+// ── Edit schedule dialog ──
+let editDurVal = 45;
+let editTargetId = null;
+let editDurTouchY = null;
+
+function openEditSchedDialog(calId) {
+  const c = calTasks.find(x => x.id === calId);
+  if (!c) return;
+  editTargetId = calId;
+  editDurVal = c.dur || 45;
+  document.getElementById('editSchedLabel').textContent = c.name;
+  document.getElementById('editSchedDate').value = c.date || '';
+  document.getElementById('editSchedTime').value = c.time || '';
+  document.getElementById('editDurDisplay').textContent = editDurVal;
+  const note = c.recur !== 'once'
+    ? `RECURRENCE: ${c.recur.toUpperCase()} — editing will update ALL occurrences`
+    : 'ONE-TIME EVENT';
+  document.getElementById('editRecurNote').textContent = note;
+  document.getElementById('editSchedDialog').style.display = 'flex';
+}
+function closeEditSchedDialog() {
+  document.getElementById('editSchedDialog').style.display = 'none';
+  editTargetId = null;
+}
+function adjEditDur(delta) {
+  editDurVal = Math.max(5, Math.min(480, editDurVal + delta));
+  document.getElementById('editDurDisplay').textContent = editDurVal;
+}
+function editDurTouchStart(e) { editDurTouchY = e.touches[0].clientY; }
+function editDurTouchMove(e) {
+  if (editDurTouchY === null) return;
+  const dy = editDurTouchY - e.touches[0].clientY;
+  if (Math.abs(dy) >= 8) { adjEditDur(dy > 0 ? 5 : -5); editDurTouchY = e.touches[0].clientY; }
+  e.preventDefault();
+}
+function editDurMouseStart(e) {
+  let startY = e.clientY;
+  const onMove = ev => { const dy=startY-ev.clientY; if(Math.abs(dy)>=8){adjEditDur(dy>0?5:-5);startY=ev.clientY;} };
+  const onUp = () => { document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); };
+  document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+}
+function confirmEditSchedule() {
+  const c = calTasks.find(x => x.id === editTargetId);
+  if (!c) return;
+  const date = document.getElementById('editSchedDate').value;
+  const time = document.getElementById('editSchedTime').value;
+  if (!date) { showToast('SELECT A DATE','warn'); return; }
+  // For recurring: update all entries with same taskId + recur pattern
+  if (c.recur !== 'once') {
+    calTasks.filter(x => x.taskId === c.taskId && x.recur === c.recur).forEach(x => {
+      x.time = time; x.dur = editDurVal;
+    });
+  }
+  // Always update this specific entry's date + time + dur
+  c.date = date; c.time = time; c.dur = editDurVal;
+  saveCalTasks(); closeEditSchedDialog(); renderCal(); renderTasks();
+  showToast('SCHEDULE UPDATED');
+}
+
+// ── Record session ──
+function recordSession(minsDone) {
+  if (!activeTimerTask || minsDone < 1) return;
+  const c = calTasks.find(x => x.id === activeTimerTask.calId);
+  if (!c) return;
+  c.sessions.push({ mins: minsDone, ts: Date.now() });
+  // Mark done for today — recurring resets automatically each new day
+  const todayStr = toDateStr(new Date());
+  if (c.recur === 'once') {
+    c.done = true;
+  } else {
+    if (!c.doneDates) c.doneDates = {};
+    c.doneDates[todayStr] = true;
+  }
+  saveCalTasks(); renderCal(); renderTasks();
+}
+
+// ── Calendar open/close ──
+function openCalDrawer() { playUiSwipe(); renderCal(); document.getElementById('calDrawer').classList.add('open'); }
+function closeCalDrawer() { playUiSwipe(); document.getElementById('calDrawer').classList.remove('open'); }
+function openDrawer() { playUiSwipe(); renderDrawer(); document.getElementById('catDrawer').classList.add('open'); }
+function closeDrawer() { playUiSwipe(); document.getElementById('catDrawer').classList.remove('open'); }
+
+function setCalView(v) {
+  calView = v; calOffset = 0;
+  const bw = document.getElementById('btnViewWeek');
+  const bm = document.getElementById('btnViewMonth');
+  [bw,bm].forEach(b => { b.style.background='rgba(255,255,255,0.07)'; b.style.color='var(--muted)'; b.style.borderColor='rgba(255,255,255,0.1)'; });
+  const active = v==='week' ? bw : bm;
+  active.style.background='var(--blue)'; active.style.color='#fff'; active.style.borderColor='var(--blue)';
+  renderCal();
+}
+
+function renderCal() { calView==='week' ? renderCalWeek() : renderCalMonth(); }
+
+function toDateStr(d) { return d.toISOString().slice(0,10); }
+
+function getOccurrences(task, dates) {
+  const base = new Date(task.date+'T12:00:00');
+  return dates.filter(wd => {
+    const d = new Date(wd+'T12:00:00');
+    if (d < base && task.recur!=='once') return false;
+    if (task.recur==='once')    return wd===task.date;
+    if (task.recur==='daily')   return true;
+    if (task.recur==='weekly')  return d.getDay()===base.getDay();
+    if (task.recur==='monthly') return d.getDate()===base.getDate();
+    return false;
+  });
+}
+
+function calItemHtml(t, displayDate) {
+  const dateStr = displayDate || toDateStr(new Date());
+  const isDone = isCalEntryDone(t, dateStr);
+  const totalMins = t.sessions.reduce((s,x)=>s+x.mins,0);
+  const icons = t.sessions.slice(-6).map(s=>f16Icon(s.mins)).join('');
+  const recurB = t.recur!=='once' ? `<span class="cal-recur-badge">${t.recur}</span>` : '';
+  // Sessions done on this specific date
+  const dateSessions = t.sessions.filter(s => toDateStr(new Date(s.ts)) === dateStr);
+  const dateIcons = dateSessions.slice(-6).map(s=>f16Icon(s.mins)).join('');
+  return `<div class="cal-week-item" style="border-left-color:${isDone?'var(--green)':t.color||'var(--blue)'};${isDone?'opacity:0.55':''}">
+    ${t.time?`<div class="cal-week-time">${t.time}</div>`:''}
+    <div style="font-size:0.75rem;font-weight:700;line-height:1.3${isDone?';text-decoration:line-through':''}">${esc(t.name)}</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.47rem;color:var(--muted)">${t.dur}m ${recurB}</div>
+    ${dateIcons?`<div class="cal-week-sessions" style="margin-top:2px">${dateIcons}</div>`:''}
+    ${isDone
+      ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+           <span style="font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:var(--green);letter-spacing:1px">✓ DONE ${dateStr}</span>
+           <button onclick="togCalTaskDate(${t.id},'${dateStr}')" class="cal-del-btn" style="font-size:0.45rem;font-family:'Share Tech Mono',monospace;letter-spacing:1px;color:var(--muted)">↩ UNDO</button>
+         </div>`
+      : `<div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+          <button onclick="openEditSchedDialog(${t.id})" class="cal-run-btn" style="background:rgba(255,165,0,0.15);color:var(--orange)">✎ EDIT</button>
+          <button onclick="delCalEntry(${t.id})" class="cal-del-btn" style="font-size:0.5rem;font-family:'Share Tech Mono',monospace;letter-spacing:1px">✕ DEL</button>
+        </div>`
+    }
+  </div>`;
+}
+
+// Toggle done for a specific date occurrence
+function togCalTaskDate(calId, dateStr) {
+  const c = calTasks.find(x => x.id === calId);
+  if (!c) return;
+  if (c.recur === 'once') {
+    c.done = !c.done;
+  } else {
+    if (!c.doneDates) c.doneDates = {};
+    c.doneDates[dateStr] = !c.doneDates[dateStr];
+    if (!c.doneDates[dateStr]) delete c.doneDates[dateStr];
+  }
+  saveCalTasks(); renderCal(); renderTasks();
+}
+
+// ── WEEK VIEW ──
+function renderCalWeek() {
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (now.getDay()+6)%7 + calOffset*7);
+  monday.setHours(12,0,0,0);
+  const weekDates = Array.from({length:7}, (_,i) => { const d=new Date(monday); d.setDate(monday.getDate()+i); return toDateStr(d); });
+  const todayStr = toDateStr(new Date());
+  const endD = new Date(monday); endD.setDate(monday.getDate()+6);
+  document.getElementById('calPeriodLabel').textContent =
+    monday.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' +
+    endD.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const DAYS = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  const cols = weekDates.map((wd,i) => {
+    const isToday = wd===todayStr;
+    const dayNum = new Date(wd+'T12:00:00').getDate();
+    const items = calTasks.filter(t=>getOccurrences(t,[wd]).length>0).sort((a,b)=>(a.time||'99:99')<(b.time||'99:99')?-1:1);
+    return `<div class="cal-day-col">
+      <div class="cal-day-head ${isToday?'today':''}">${DAYS[i]}<br><span style="font-size:0.65rem;opacity:0.7">${dayNum}</span></div>
+      ${items.map(t=>calItemHtml(t,wd)).join('') || '<div style="font-family:\'Share Tech Mono\',monospace;font-size:0.42rem;color:rgba(255,255,255,0.07);text-align:center;padding:10px 0">—</div>'}
+    </div>`;
+  }).join('');
+  document.getElementById('calBody').innerHTML = `<div class="cal-week-grid">${cols}</div>`;
+}
+
+// ── MONTH VIEW ──
+function renderCalMonth() {
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth()+calOffset, 1);
+  const todayStr = toDateStr(new Date());
+  document.getElementById('calPeriodLabel').textContent =
+    firstDay.toLocaleDateString('en-US',{month:'long',year:'numeric'}).toUpperCase();
+  const startDow = (firstDay.getDay()+6)%7;
+  const gridStart = new Date(firstDay); gridStart.setDate(1-startDow);
+  const DAYS = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">`;
+  DAYS.forEach(d => { html += `<div style="font-family:'Share Tech Mono',monospace;font-size:0.5rem;letter-spacing:1px;color:var(--muted);text-align:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">${d}</div>`; });
+  for (let cell=0; cell<42; cell++) {
+    const d = new Date(gridStart); d.setDate(gridStart.getDate()+cell);
+    const ds = toDateStr(d);
+    const inMonth = d.getMonth()===firstDay.getMonth();
+    const isToday = ds===todayStr;
+    const items = calTasks.filter(t=>getOccurrences(t,[ds]).length>0);
+    const hasActive = items.some(t=>activeTimerTask&&activeTimerTask.calId===t.id);
+    html += `<div onclick="${items.length?`showDayPopup('${ds}')`:''}" style="
+      min-height:42px;padding:3px 4px;cursor:${items.length?'pointer':'default'};
+      background:${isToday?'rgba(247,127,0,0.1)':hasActive?'rgba(247,127,0,0.05)':'rgba(255,255,255,0.02)'};
+      border:1px solid ${isToday?'var(--orange)':'rgba(255,255,255,0.05)'};
+      opacity:${inMonth?1:0.25};">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:${isToday?'var(--orange)':'var(--muted)'};margin-bottom:2px">${d.getDate()}</div>
+      ${items.slice(0,2).map(t=>`<div style="font-size:0.62rem;font-weight:700;color:${t.color||'var(--blue)'};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.25">${esc(t.name)}</div>`).join('')}
+      ${items.length>2?`<div style="font-family:'Share Tech Mono',monospace;font-size:0.42rem;color:var(--muted)">+${items.length-2}</div>`:''}
+    </div>`;
+  }
+  html += '</div>';
+  document.getElementById('calBody').innerHTML = html;
+}
+
+function showDayPopup(ds) {
+  const items = calTasks.filter(t=>getOccurrences(t,[ds]).length>0);
+  if (!items.length) return;
+  document.querySelectorAll('.day-popup,.day-popup-ov').forEach(p=>p.remove());
+  const ov = document.createElement('div');
+  ov.className='day-popup-ov';
+  ov.style.cssText='position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.55)';
+  const d = new Date(ds+'T12:00:00');
+  const label = d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}).toUpperCase();
+  const pop = document.createElement('div');
+  pop.className='day-popup';
+  pop.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:701;background:#161b22;border:1px solid rgba(255,255,255,0.12);border-top:3px solid var(--blue);padding:18px;width:90%;max-width:340px;max-height:70vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;';
+  pop.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:2px;color:var(--blue)">${label}</div>
+    <button onclick="document.querySelectorAll('.day-popup,.day-popup-ov').forEach(p=>p.remove())" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer">✕</button>
+  </div>${items.map(t=>calItemHtml(t,ds)).join('')}`;
+  ov.onclick = e => { if(e.target===ov){ document.querySelectorAll('.day-popup,.day-popup-ov').forEach(p=>p.remove()); }};
+  document.body.appendChild(ov);
+  document.body.appendChild(pop);
+}
+
+
+
+let tTimer;
+function showToast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.className = 'toast' + (type ? ' '+type : '');
+  el.textContent = '// ' + msg + ' //';
+  el.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// init
+initApp();
+</script>
+</body>
+</html>
