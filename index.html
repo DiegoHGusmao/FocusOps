@@ -606,7 +606,7 @@ if ('serviceWorker' in navigator) {
 <header>
   <div>
     <div class="logo-main">FOCUS<span>OPS</span></div>
-    <div class="logo-sub">MISSION CONTROL // v1.0</div>
+    <div class="logo-sub">MISSION CONTROL // v1.2</div>
   </div>
   <div class="header-right">
     <div class="status-dot"><span class="dot"></span> SYSTEM ONLINE &nbsp;|&nbsp; <span id="clk">--:--:--</span></div>
@@ -924,51 +924,108 @@ function setVol(key, val) {
   if (key==='music' && musicAudio) musicAudio.volume = VOL.music * 0.5;
 }
 
+// ── UI Click: hard metallic relay click ──
 function playUiClick() {
   if (!uiSfxOn) return;
   const ctx = getCtx(); const now = ctx.currentTime;
-  const o = ctx.createOscillator(), g = ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  o.type = 'sine'; o.frequency.value = 1200;
-  g.gain.setValueAtTime(0.08 * VOL.sfx, now);
-  g.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-  o.start(now); o.stop(now + 0.07);
+  const sr = ctx.sampleRate;
+  // Sharp noise burst — like a relay or hard switch
+  const buf = ctx.createBuffer(1, sr * 0.04, sr);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) {
+    d[i] = (Math.random()*2-1) * Math.exp(-i/(sr*0.004));
+  }
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const hp = ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1800;
+  const g = ctx.createGain();
+  src.connect(hp); hp.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(0.5 * VOL.sfx, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now+0.035);
+  src.start(now); src.stop(now+0.04);
 }
 
+// ── UI Swipe: hydraulic/mechanical panel slide ──
 function playUiSwipe() {
   if (!uiSfxOn) return;
   const ctx = getCtx(); const now = ctx.currentTime;
-  const o = ctx.createOscillator(), g = ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  o.type = 'sine';
-  o.frequency.setValueAtTime(600, now);
-  o.frequency.exponentialRampToValueAtTime(900, now + 0.08);
-  g.gain.setValueAtTime(0.06 * VOL.sfx, now);
-  g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-  o.start(now); o.stop(now + 0.11);
+  const sr = ctx.sampleRate;
+  const dur = 0.18;
+  // Low rumble burst — like a heavy panel sliding on rails
+  const buf = ctx.createBuffer(1, sr * dur, sr);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) {
+    const env = Math.exp(-i/(sr*0.06)) * (1 - Math.exp(-i/(sr*0.004)));
+    d[i] = (Math.random()*2-1) * env;
+  }
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  // Band-pass to get a thick mechanical thud
+  const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=280; bp.Q.value=1.2;
+  const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=900;
+  const g = ctx.createGain();
+  src.connect(bp); bp.connect(lp); lp.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(0.6 * VOL.sfx, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now+dur);
+  src.start(now); src.stop(now+dur+0.02);
+  // Add a short metallic click at the end (panel locking into place)
+  const buf2 = ctx.createBuffer(1, sr*0.03, sr);
+  const d2 = buf2.getChannelData(0);
+  for (let i=0;i<d2.length;i++) d2[i]=(Math.random()*2-1)*Math.exp(-i/(sr*0.003));
+  const src2 = ctx.createBufferSource(); src2.buffer=buf2;
+  const hp2 = ctx.createBiquadFilter(); hp2.type='highpass'; hp2.frequency.value=2500;
+  const g2 = ctx.createGain();
+  src2.connect(hp2); hp2.connect(g2); g2.connect(ctx.destination);
+  g2.gain.setValueAtTime(0.3*VOL.sfx, now+dur*0.85);
+  src2.start(now+dur*0.85); src2.stop(now+dur+0.03);
+}
+
+// ── Fill sound: jet engine spooling up ──
+function playFillSound(durationMs) {
+  if (!uiSfxOn) return;
+  const ctx = getCtx(); const now = ctx.currentTime;
+  const sr = ctx.sampleRate;
+  const dur = durationMs / 1000;
+  // Layer 1: turbine noise — filtered white noise rising in pitch
+  const buf = ctx.createBuffer(1, sr * dur, sr);
+  const d = buf.getChannelData(0);
+  for (let i=0; i<d.length; i++) d[i] = Math.random()*2-1;
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=0.6;
+  // Sweep centre freq from 120→2800Hz (engine spool-up)
+  bp.frequency.setValueAtTime(120, now);
+  bp.frequency.exponentialRampToValueAtTime(2800, now+dur);
+  const g = ctx.createGain();
+  src.connect(bp); bp.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(0, now);
+  g.gain.linearRampToValueAtTime(0.18*VOL.sfx, now+dur*0.3);
+  g.gain.linearRampToValueAtTime(0.28*VOL.sfx, now+dur*0.85);
+  g.gain.linearRampToValueAtTime(0.05*VOL.sfx, now+dur);
+  src.start(now); src.stop(now+dur+0.05);
+  // Layer 2: low-frequency rumble (compressor)
+  const o = ctx.createOscillator(); const g2 = ctx.createGain();
+  o.connect(g2); g2.connect(ctx.destination);
+  o.type='sawtooth';
+  o.frequency.setValueAtTime(40, now);
+  o.frequency.exponentialRampToValueAtTime(180, now+dur);
+  g2.gain.setValueAtTime(0, now);
+  g2.gain.linearRampToValueAtTime(0.12*VOL.sfx, now+dur*0.2);
+  g2.gain.linearRampToValueAtTime(0.04*VOL.sfx, now+dur);
+  o.start(now); o.stop(now+dur+0.05);
+  // Layer 3: ignition crack at start
+  const ibuf = ctx.createBuffer(1, sr*0.08, sr);
+  const id = ibuf.getChannelData(0);
+  for(let i=0;i<id.length;i++) id[i]=(Math.random()*2-1)*Math.exp(-i/(sr*0.015));
+  const isrc = ctx.createBufferSource(); isrc.buffer=ibuf;
+  const ihp = ctx.createBiquadFilter(); ihp.type='highpass'; ihp.frequency.value=800;
+  const ig = ctx.createGain();
+  isrc.connect(ihp); ihp.connect(ig); ig.connect(ctx.destination);
+  ig.gain.setValueAtTime(0.4*VOL.sfx, now);
+  ig.gain.exponentialRampToValueAtTime(0.001, now+0.08);
+  isrc.start(now); isrc.stop(now+0.09);
 }
 
 // Mechanical safe-dial click — only fires when finger moves
 let lastDragAngle = null;
-const LOCK_STEP_DEG = 6; // degrees of movement per click
-
-function playFillSound(durationMs) {
-  if (!uiSfxOn) return;
-  const ctx = getCtx(); const now = ctx.currentTime;
-  const dur = durationMs / 1000;
-  const o = ctx.createOscillator(), g = ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  o.type = 'sine';
-  // Sweep from 120Hz up to 600Hz over the fill duration
-  o.frequency.setValueAtTime(120, now);
-  o.frequency.exponentialRampToValueAtTime(600, now + dur * 0.85);
-  o.frequency.exponentialRampToValueAtTime(800, now + dur);
-  g.gain.setValueAtTime(0, now);
-  g.gain.linearRampToValueAtTime(0.07 * VOL.sfx, now + 0.05);
-  g.gain.setValueAtTime(0.07 * VOL.sfx, now + dur - 0.08);
-  g.gain.linearRampToValueAtTime(0, now + dur);
-  o.start(now); o.stop(now + dur + 0.05);
-}
+const LOCK_STEP_DEG = 6;
 
 function playLockTick() {
   if (!uiSfxOn) return;
@@ -1579,19 +1636,26 @@ function enterTimerFullscreen() {
   ov.style.display = 'flex';
   requestWakeLock();
 
+  // Request native fullscreen to hide OS navigation bar
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+
   // Size the overlay canvas to fill the screen (square, as large as fits)
   ovCanvas = document.getElementById('ovCanvas');
   ovCtx = ovCanvas.getContext('2d');
-  const size = Math.min(window.innerWidth, window.innerHeight) * 0.82;
-  ovCanvas.width = size; ovCanvas.height = size;
-  ovCanvas.style.width = size+'px'; ovCanvas.style.height = size+'px';
+  // Resize after a short delay to get correct post-fullscreen dimensions
+  setTimeout(() => {
+    const size = Math.min(window.innerWidth, window.innerHeight) * 0.82;
+    ovCanvas.width = size; ovCanvas.height = size;
+    ovCanvas.style.width = size+'px'; ovCanvas.style.height = size+'px';
+  }, 200);
 
-  // Tap to exit / double-tap to dismiss then re-enter
   ovCanvas.ontouchend = ovCanvas.onclick = (e) => {
     e.stopPropagation();
     const now = Date.now();
     if (now - lastTapTime < 380) {
-      // double tap — if exited, re-enter
+      // double tap — ignore (already in overlay)
     } else {
       exitTimerFullscreen();
     }
@@ -1607,6 +1671,11 @@ function exitTimerFullscreen() {
   document.getElementById('timerOverlay').style.display = 'none';
   if (ovAnimId) { cancelAnimationFrame(ovAnimId); ovAnimId = null; }
   releaseWakeLock();
+  // Exit native fullscreen
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
 }
 
 function drawOverlay() {
@@ -2349,17 +2418,20 @@ document.querySelector('.app').addEventListener('touchend', e => {
 }, {passive: true});
 
 // ── Calendar drawer: swipe LEFT anywhere in drawer closes it ──
-let calSwipeX = null, calSwipeY = null;
+let calSwipeX = null, calSwipeY = null, calSwipeStartX = null;
 document.getElementById('calDrawer').addEventListener('touchstart', e => {
   calSwipeX = e.touches[0].clientX;
   calSwipeY = e.touches[0].clientY;
+  calSwipeStartX = e.touches[0].clientX; // record starting X
 }, {passive: true});
 document.getElementById('calDrawer').addEventListener('touchend', e => {
   if (calSwipeX === null) return;
   const dx = e.changedTouches[0].clientX - calSwipeX;
   const dy = e.changedTouches[0].clientY - calSwipeY;
-  if (dx < -55 && Math.abs(dx) > Math.abs(dy) * 1.5) closeCalDrawer();
-  calSwipeX = null; calSwipeY = null;
+  // Only close if: swipe LEFT, horizontal dominates, AND started from right 25% of screen
+  const startedFromRightEdge = calSwipeStartX > window.innerWidth * 0.75;
+  if (dx < -55 && Math.abs(dx) > Math.abs(dy) * 2 && startedFromRightEdge) closeCalDrawer();
+  calSwipeX = null; calSwipeY = null; calSwipeStartX = null;
 }, {passive: true});
 
 // ── Urgency drawer: swipe RIGHT anywhere in drawer closes it ──
